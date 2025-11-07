@@ -1,0 +1,68 @@
+#include "commands.h"
+
+#include "core.h"
+#include "editor.h"
+#include "term.h"
+#include "window.h"
+#include "ui.h"
+#include "event.h"
+
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <unistd.h>
+
+void editorQuit(TextBuffer *buf, int fd)
+{
+    if (buf->dirty == false)
+        exit(0);
+
+    char query[EDITOR_QUERY_LEN + 1] = {0};
+    int qlen = 0;
+
+    while (1)
+    {
+        editorSetStatusMessage(
+            "There are unsaved changes, do you really want to quit? (y/N): %s",
+            query);
+        editorRefreshScreen();
+
+        int c = editorReadKey(fd);
+
+        if (c == DEL_KEY || c == CTRL_H || c == BACKSPACE)
+        {
+            if (qlen != 0)
+                query[--qlen] = '\0';
+        }
+        else if (c == ESC)
+        {
+            editorSetStatusMessage("");
+            return;
+        }
+        else if (c == ENTER)
+        {
+            if (!strcmp(query, "y") || !strcmp(query, "Y") || !strcmp(query, "yes") ||
+                !strcmp(query, "Yes") || !strcmp(query, "YES"))
+                exit(0);
+
+            editorSetStatusMessage("");
+            return;
+        }
+        else if (isprint(c))
+        {
+            if (qlen < EDITOR_QUERY_LEN)
+            {
+                query[qlen++] = c;
+                query[qlen] = '\0';
+            }
+        }
+    }
+}
+
+void editorToggleLinenum(void)
+{
+    E.active_win->linenums = !E.active_win->linenums;
+
+    updateWindowSize();
+}
+
