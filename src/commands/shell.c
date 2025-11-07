@@ -12,7 +12,7 @@
 // TODO: shell should also able to interpret commands as config file command,
 // the exec command will call to the interpreter
 
-static int commandExec(const char *command, int len)
+static int commandExec(int fd, const char *command, int len)
 {
     if (len == 0) return 0;
     if (len == 1)
@@ -20,11 +20,11 @@ static int commandExec(const char *command, int len)
         switch (command[0])
         {
         case 'q':
-            editorQuit(E.active_win->buf, STDIN_FILENO);
+            editorQuit(E.active_win->buf, fd);
             return 0;
             break;
         case 'f':
-            editorFind(E.active_win, STDIN_FILENO);
+            editorFind(E.active_win, fd);
             return 0;
         }
         return -1;
@@ -32,7 +32,7 @@ static int commandExec(const char *command, int len)
 
     if (strcmp(command, "quit") == 0)
     {
-        editorQuit(E.active_win->buf, STDIN_FILENO);
+        editorQuit(E.active_win->buf, fd);
         return 0;
     }
     if (strcmp(command, "line") == 0)
@@ -42,14 +42,14 @@ static int commandExec(const char *command, int len)
     }
     if (strcmp(command, "find") == 0)
     {
-        editorFind(E.active_win, STDIN_FILENO);
+        editorFind(E.active_win, fd);
         return 0;
     }
 
     return -1;
 }
 
-void editorShell()
+void editorShell(int fd)
 {
     char query[EDITOR_QUERY_LEN + 1] = {0};
     int qlen = 0;
@@ -59,7 +59,7 @@ void editorShell()
         editorSetStatusMessage(" :%s", query);
         editorRefreshScreen();
 
-        int c = editorReadKey(STDIN_FILENO);
+        int c = editorReadKey(fd);
 
         if (c == DEL_KEY || c == CTRL_H || c == BACKSPACE)
         {
@@ -74,7 +74,7 @@ void editorShell()
         else if (c == ENTER)
         {
             editorSetStatusMessage("");
-            if (commandExec(query, qlen) == -1)
+            if (commandExec(fd, query, qlen) == -1)
             {
                 editorSetStatusMessage("Unknown command \"%s\"", query);
             }

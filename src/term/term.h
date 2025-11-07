@@ -93,5 +93,6 @@ int getWindowSize(int ifd, int ofd, int *rows, int *cols);
 int editorReadKey(int fd);
 
 int setCursorMode(enum CursorMode mode);
+void setCursorPosition(int fd, int row, int col);
 
 #endif /* __EDITOR_TERM_H */

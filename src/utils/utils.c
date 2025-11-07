@@ -22,7 +22,6 @@ ssize_t writen(int fd, const void *buf, size_t n)
             }
             else
             {
-                // Non-recoverable error occurred
                 return -1; 
             }
         }

@@ -16,7 +16,6 @@ static struct termios orig_termios;
 
 static void disableRawMode(int fd)
 {
-    /* Don't even check the return value as it's too late. */
     if (E.rawmode)
     {
         tcsetattr(fd, TCSAFLUSH, &orig_termios);
@@ -26,32 +25,51 @@ static void disableRawMode(int fd)
 
 int setCursorMode(enum CursorMode mode)
 {
-    if (mode > 6) return -1;
+    if (mode > 6)
+        return -1;
 
     char seq[16];
     int len = snprintf(seq, sizeof(seq), "\x1b[%u q", mode);
 
-    if (writen(STDOUT_FILENO, seq, len) != len)
+    if (writen(STDOUT_FILENO, seq, len) == -1)
         return -1;
-
-    fflush(stdout);
 
     return 0;
 }
 
-void terminalPrint(int fd, const char *buf)
+void setCursorPosition(int fd, int row, int col)
 {
-    writen(fd, buf, strlen(buf));
+    char seq[32];
+    int len;
+
+    len = snprintf(seq, sizeof(seq), "\x1b[%d;%dH", row, col);
+
+    if (len < 0 || (size_t)len >= sizeof(seq))
+    {
+        editorFatalError("Fatal: snprintf buffer overflow during cursor set\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (writen(fd, seq, len) == -1)
+    {
+        editorFatalError("Fatal: Write failed during cursor set\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+ssize_t termPrint(int fd, const char *buf)
+{
+    return writen(fd, buf, strlen(buf));
 }
 
 static void enableAltScreen(void)
 {
-    terminalPrint(STDOUT_FILENO, ESC_ENABLE_ALT_SCREEN);
+    termPrint(STDOUT_FILENO, ESC_ENABLE_ALT_SCREEN);
 }
 
 static void disableAltScreen(void)
 {
-    terminalPrint(STDOUT_FILENO, ESC_DISABLE_ALT_SCREEN);
+    termPrint(STDOUT_FILENO, ESC_DISABLE_ALT_SCREEN);
 }
 
 static void editorAtExit(void)
@@ -64,53 +82,47 @@ static void editorAtExit(void)
     /* TODO: implement only for terminals without alt screen */
     if (0)
     {
-        writen(STDOUT_FILENO, ESC_CURSOR_HOME, 4);
-        writen(STDOUT_FILENO, ESC_ERASE_SCREEN, 4);
+        termPrint(STDOUT_FILENO, ESC_CURSOR_HOME);
+        termPrint(STDOUT_FILENO, ESC_ERASE_SCREEN);
     }
 
     editorPrintFatalError();
 }
 
-/* Raw mode: 1960 magic shit. */
 int enableRawMode(int fd)
 {
     struct termios raw;
 
-    if (E.rawmode)
-        return 0; /* Already enabled. */
-    if (!isatty(STDIN_FILENO))
-        goto fatal;
+    if (E.rawmode) return 0;
+
+    if (!isatty(fd))
+    {
+        errno = ENOTTY;
+        return -1;
+    }
+
     atexit(editorAtExit);
+
     if (tcgetattr(fd, &orig_termios) == -1)
-        goto fatal;
+        return -1;
 
-    raw = orig_termios; /* modify the original mode */
-    /* input modes: no break, no CR to NL, no parity check, no strip char,
-     * no start/stop output control. */
+    raw = orig_termios;
+
     raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
-    /* output modes - disable post processing */
     raw.c_oflag &= ~(OPOST);
-    /* control modes - set 8 bit chars */
     raw.c_cflag |= (CS8);
-    /* local modes - choing off, canonical off, no extended functions,
-     * no signal chars (^Z,^C) */
     raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
-    /* control chars - set return condition: min number of bytes and timer. */
-    raw.c_cc[VMIN] = 0;  /* Return each byte, or zero for timeout. */
-    raw.c_cc[VTIME] = 1; /* 100 ms timeout (unit is tens of second). */
+    raw.c_cc[VMIN] = 0;
+    raw.c_cc[VTIME] = 1;
 
-    /* put terminal in raw mode after flushing */
     if (tcsetattr(fd, TCSAFLUSH, &raw) < 0)
-        goto fatal;
+        return -1;
 
     enableAltScreen();
 
     E.rawmode = true;
+    
     return 0;
-
-fatal:
-    errno = ENOTTY;
-    return -1;
 }
 
 static int parseEsc(int fd)
@@ -199,14 +211,12 @@ int editorReadKey(int fd)
     }
 }
 
-/* On success the position of the cursor is stored at *rows and 
-   *cols and 0 is returned. -1 on error */
 static int getCursorPosition(int ifd, int ofd, int *rows, int *cols)
 {
     char buf[32];
     unsigned int i = 0;
 
-    if (writen(ofd, ESC_GET_CURSOR_POS, 4) != 4)
+    if (termPrint(ofd, ESC_GET_CURSOR_POS) == -1)
         return -1;
 
     /* Read the response: ESC[#;#R */
@@ -225,7 +235,7 @@ static int getCursorPosition(int ifd, int ofd, int *rows, int *cols)
         return -1;
     if (sscanf(buf + 2, "%d;%d", rows, cols) != 2)
         return -1;
-    
+
     return 0;
 }
 
@@ -236,35 +246,26 @@ int getWindowSize(int ifd, int ofd, int *rows, int *cols)
     if (ioctl(1, TIOCGWINSZ, &ws) == -1 || ws.ws_col == 0)
     {
         /* ioctl() failed. Try to query the terminal itself. */
-        
         int orig_row, orig_col;
 
         if (getCursorPosition(ifd, ofd, &orig_row, &orig_col) == -1)
-            goto failed;
+            return -1;
 
         /* Go to right/bottom margin */
-        if (writen(ofd, "\x1b[999C\x1b[999B", 12) != 12)
-            goto failed;
+        if (termPrint(ofd, "\x1b[999C\x1b[999B") == -1)
+            return -1;
         if (getCursorPosition(ifd, ofd, rows, cols) == -1)
-            goto failed;
+            return -1;
 
-        /* Restore position. */
-        char seq[32];
-        snprintf(seq, 32, "\x1b[%d;%dH", orig_row, orig_col);
-        if (writen(ofd, seq, strlen(seq)) == -1)
-        {
-            /* Can't recover... */
-        }
-        return 0;
+        setCursorPosition(ofd, orig_row, orig_col);
     }
     else
     {
-        if (cols) *cols = ws.ws_col;
-        if (rows) *rows = ws.ws_row;
-        
-        return 0;
+        if (cols)
+            *cols = ws.ws_col;
+        if (rows)
+            *rows = ws.ws_row;
     }
 
-failed:
-    return -1;
+    return 0;
 }

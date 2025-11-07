@@ -8,6 +8,8 @@
 #include "ui.h"
 #include "window.h"
 
+#include <unistd.h>
+
 void editorSetNormalMode(void)
 {
     E.mode = NORMAL_MODE;
@@ -71,7 +73,7 @@ void editorNMProcessKeypress(int fd)
         E.relativenums = !E.relativenums;
         break;
     case ':':
-        editorShell();
+        editorShell(STDIN_FILENO);
         break;
     default:
         break;

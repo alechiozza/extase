@@ -6,12 +6,12 @@ typedef struct Window Window;
 
 int editorOpen(Window *W, char *filename);
 int editorSave(TextBuffer *buf);
-int editorSaveAs(TextBuffer *buf);
+int editorSaveAs(TextBuffer *buf, int fd);
 void editorQuit(TextBuffer *buf, int fd);
 
 void editorFind(Window *W, int fd);
 
 void editorToggleLinenum(void);
-void editorShell(void);
+void editorShell(int fd);
 
 #endif /* __EDITOR_COMMANDS_H */

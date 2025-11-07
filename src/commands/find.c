@@ -168,14 +168,9 @@ void editorFind(Window *W, int fd)
 
         // 4. Manually move physical cursor to the prompt in the status bar
         // We assume status bar is at 1-based screen row E.screenrows
-        // char move_cursor_buf[32];
-        // int prompt_screen_y = E.screenrows;
-        // // +1 for 1-based indexing
-        // int prompt_screen_x = (int)strlen(prompt_prefix) + 1; 
-        
-        // snprintf(move_cursor_buf, sizeof(move_cursor_buf), "\x1b[%d;%dH", 
-        //          prompt_screen_y, prompt_screen_x + qlen);
-        // writen(STDOUT_FILENO, move_cursor_buf, strlen(move_cursor_buf));
+        int prompt_screen_y = E.screenrows;
+        int prompt_screen_x = (int)strlen(prompt_prefix) + 1; 
+        setCursorPosition(STDOUT_FILENO, prompt_screen_y, prompt_screen_x + qlen);
         
         int c = editorReadKey(fd);
 

@@ -159,7 +159,7 @@ int editorSave(TextBuffer *buf)
     /* TODO: improve this for safety reasons... */
     if (ftruncate(fd, len) == -1)
         goto writeerr;
-    if (writen(fd, strbuf, len) != len)
+    if (writen(fd, strbuf, len) == -1)
         goto writeerr;
 
     close(fd);
@@ -176,7 +176,7 @@ writeerr:
     return 1;
 }
 
-int editorSaveAs(TextBuffer *buf)
+int editorSaveAs(TextBuffer *buf, int fd)
 {
     char query[EDITOR_QUERY_LEN + 1] = {0};
     int qlen = 0;
@@ -186,7 +186,7 @@ int editorSaveAs(TextBuffer *buf)
         editorSetStatusMessage("Type the name of the file: %s", query);
         editorRefreshScreen();
 
-        int c = editorReadKey(STDOUT_FILENO);
+        int c = editorReadKey(fd);
 
         if (c == DEL_KEY || c == CTRL_H || c == BACKSPACE)
         {
