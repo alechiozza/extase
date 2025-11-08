@@ -15,28 +15,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static void drawLineNumber(Framebuffer *fb, Window *W, int filerow, int n)
-{
-    char buf[24];
-    int rnum = filerow+1 % 1000;
-    int current_row = W->viewport.rowoff + W->cy;
-
-    int blen;
-    if (E.relativenums)
-    {
-        if (filerow == current_row)
-            blen = snprintf(buf, sizeof(buf), "%3d  ", rnum);
-        else
-            blen = snprintf(buf, sizeof(buf), " %3d ", abs(current_row-filerow));
-    }
-    else
-    {
-        blen = snprintf(buf, sizeof(buf), " %3d ", rnum);
-    }
-
-    fbDrawChars(fb, W->x, W->y + n, buf, blen, (Style){COLOR_BRIGHT_BLACK, COLOR_BLACK,0});
-}
-
 static void drawTopBar(Framebuffer *fb)
 {
     char topbar[80];
@@ -57,22 +35,22 @@ static void drawInfoBar(Framebuffer *fb, Window *W)
     if (len > W->width)
         len = W->width;
     
-    fbDrawChars(fb, W->x, W->y+W->height-1, status, len, (Style){COLOR_BLACK, COLOR_BRIGHT_BLACK,0});
+    fbWindowDrawChars(fb, W, 0, W->height-1, status, len, (Style){COLOR_BLACK, COLOR_BRIGHT_BLACK,0});
 
     while (len < W->width)
     {
         if (W->width - len == rlen)
         {
-            fbDrawChars(fb, W->x + len, W->y+W->height-1, rstatus, rlen, 
+            fbWindowDrawChars(fb, W, len, W->height-1, rstatus, rlen, 
                 (Style){COLOR_BLACK, COLOR_BRIGHT_BLACK,0});
             break;
         }
         else
         {
-            fbPutChar(fb, W->x + len, W->y+W->height-1, ' ',
+            fbWindowPutChar(fb, W, len, W->height-1, ' ',
                 (Style){COLOR_BLACK, COLOR_BRIGHT_BLACK,0});
-            len++;
         }
+        len++;
     }
 }
 
@@ -87,6 +65,28 @@ static void drawStatusBar(Framebuffer *fb)
     }
 
     fbEraseLineFrom(fb, E.screenrows-1, msglen, COLOR_BLACK);
+}
+
+static void drawLineNumber(Framebuffer *fb, Window *W, int filerow, int n)
+{
+    char buf[24];
+    int rnum = filerow+1 % 1000;
+    int current_row = W->viewport.rowoff + W->cy;
+
+    int blen;
+    if (E.relativenums)
+    {
+        if (filerow == current_row)
+            blen = snprintf(buf, sizeof(buf), "%3d  ", rnum);
+        else
+            blen = snprintf(buf, sizeof(buf), " %3d ", abs(current_row-filerow));
+    }
+    else
+    {
+        blen = snprintf(buf, sizeof(buf), " %3d ", rnum);
+    }
+
+    fbWindowDrawChars(fb, W, 0, n, buf, blen, (Style){COLOR_BRIGHT_BLACK, COLOR_DEFAULT_BG,0});
 }
 
 static void drawWelcomeScreen(Framebuffer *fb, Window *W)
@@ -107,20 +107,19 @@ static void drawWelcomeScreen(Framebuffer *fb, Window *W)
 
             if (padding != 0)
             {
-                fbWindowPutChar(fb, W, W->viewport.left, y + W->viewport.top,
-                    '~', STYLE_NORMAL);
+                fbViewportPutChar(fb, W, 0, y, '~', STYLE_NORMAL);
             }
-                
-            fbDrawChars(fb, W->x + W->viewport.left + padding, W->y + y + W->viewport.top, 
-                welcome, welcomelen, STYLE_NORMAL);
+
+            // TODO: maybe write a fbEraleLineTo(...)
+            
+            fbViewportDrawChars(fb, W, padding, y, welcome, welcomelen, STYLE_NORMAL);
+
+            fbViewportEraseLineFrom(fb, W, y, padding+welcomelen, COLOR_DEFAULT_BG);
         }
         else
         {
-            fbWindowPutChar(fb, W, W->viewport.left, y + W->viewport.top,
-                '~', STYLE_NORMAL);
-
-            // TODO: not quite correct
-            fbWindowEraseLineFrom(fb, W, y + W->viewport.top, W->viewport.left + 1, COLOR_BLACK);
+            fbViewportPutChar(fb, W, 0, y, '~', STYLE_NORMAL);
+            fbViewportEraseLineFrom(fb, W, y, 1, COLOR_DEFAULT_BG);
         }
     }
 }
@@ -136,11 +135,8 @@ static void drawTextBuffer(Framebuffer *fb, Window *W)
 
         if (filerow >= W->buf->numrows)
         {
-            fbWindowPutChar(fb, W, W->viewport.left, y + W->viewport.top,
-                '~', STYLE_NORMAL);
-
-            // TODO: not quite correct
-            fbWindowEraseLineFrom(fb, W, y + W->viewport.top, W->viewport.left + 1, COLOR_BLACK);
+            fbViewportPutChar(fb, W, 0, y, '~', STYLE_NORMAL);
+            fbViewportEraseLineFrom(fb, W, y, 1, COLOR_DEFAULT_BG);
             continue;
         }
 
@@ -157,8 +153,7 @@ static void drawTextBuffer(Framebuffer *fb, Window *W)
         {
             if (hl[x] == HL_NONPRINT)
             {
-                fbWindowPutChar(fb, W, W->viewport.left + x, W->viewport.top + y,
-                    *(c+x), STYLE_INVERSE);
+                fbViewportPutChar(fb, W, x, y, *(c+x), STYLE_INVERSE);
             }
             else
             {
@@ -167,32 +162,25 @@ static void drawTextBuffer(Framebuffer *fb, Window *W)
                 if (y == W->cy && memcmp(&style.bg, &COLOR_DEFAULT_BG, sizeof(Color)) == 0)
                 {
                     /* The cursor line is highlighted  only if the background is the default one */
-                    fbWindowPutChar(fb, W, W->viewport.left + x, W->viewport.top + y,
-                        *(c+x), (Style){style.fg, COLOR_LNE_HIGHLIGHT, style.attr});
+                    fbViewportPutChar(fb, W, x, y, *(c+x),
+                        (Style){style.fg, COLOR_LNE_HIGHLIGHT, style.attr});
                 }
                 else
                 {
-                    fbWindowPutChar(fb, W, W->viewport.left + x, W->viewport.top + y,
-                        *(c+x), style);
+                    fbViewportPutChar(fb, W, x, y, *(c+x), style);
                 }
             }
         }
 
         if (len < 0) len = 0; /* fuck me, it took an hour to figure this out */
 
-        while (len < W->viewport.cols)
+        if (y == W->cy)
         {
-            if (y == W->cy)
-            {
-                fbWindowPutChar(fb, W, W->viewport.left + len, W->viewport.top + y,
-                    ' ', (Style){COLOR_WHITE, COLOR_LNE_HIGHLIGHT,0});
-            }
-            else
-            {
-                fbWindowPutChar(fb, W, W->viewport.left + len, W->viewport.top + y,
-                    ' ', STYLE_NORMAL);
-            }
-            len++;
+            fbViewportEraseLineFrom(fb, W, y, len, COLOR_LNE_HIGHLIGHT);
+        }
+        else
+        {
+            fbViewportEraseLineFrom(fb, W, y, len, COLOR_DEFAULT_BG);
         }
     }
 

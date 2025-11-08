@@ -45,6 +45,12 @@ void fbWindowDrawString(Framebuffer *fb, Window *W, int x, int y, const char *s,
 void fbWindowEraseLine(Framebuffer *fb, Window *W, int y, Color color);
 void fbWindowEraseLineFrom(Framebuffer *fb, Window *W, int y, int x, Color color);
 
+void fbViewportPutChar(Framebuffer *fb, Window *W, int x, int y, char c, Style style);
+void fbViewportDrawChars(Framebuffer *fb, Window *W, int x, int y, const char *s, int len, Style style);
+void fbViewportDrawString(Framebuffer *fb, Window *W, int x, int y, const char *s, Style style);
+void fbViewportEraseLine(Framebuffer *fb, Window *W, int y, Color color);
+void fbViewportEraseLineFrom(Framebuffer *fb, Window *W, int y, int x, Color color);
+
 void fbRender(Framebuffer *fb, AppendBuffer *ab);
 
 void abAppend(AppendBuffer *ab, const char *s, int len);

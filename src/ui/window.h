@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-struct Viewport
+typedef struct Viewport
 {
     int top, bottom;
     int left, right;
@@ -12,13 +12,13 @@ struct Viewport
     int horizontal_margin;
     int rowoff;     /* Offset of row displayed. */
     int coloff;     /* Offset of column displayed. */
-};
+} Viewport;
 
 typedef struct TextBuffer TextBuffer;
 
 typedef struct Window
 {
-    struct Viewport viewport;
+    Viewport viewport;
     TextBuffer *buf;
     int x, y;
     int width, height;

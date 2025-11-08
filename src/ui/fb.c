@@ -105,7 +105,40 @@ void fbWindowEraseLineFrom(Framebuffer *fb, Window *W, int y, int x, Color color
         fbWindowPutChar(fb, W, i, y, ' ', (Style){color, color, 0});
 }
 
-// TODO: implement functions for viewport
+void fbViewportPutChar(Framebuffer *fb, Window *W, int x, int y, char c, Style style)
+{
+    if (x < 0 || y < 0 || y >= W->viewport.rows || x >= W->viewport.cols) return;
+
+    x = W->x + W->viewport.left + x;
+    y = W->y + W->viewport.top + y;
+    
+    fb->grid[y*fb->cols + x].c = c;
+    fb->grid[y*fb->cols + x].style = style;
+}
+
+void fbViewportDrawChars(Framebuffer *fb, Window *W, int x, int y, const char *s, int len, Style style)
+{
+    for (int i = 0; i < len && x + i < fb->cols; i++)
+        fbViewportPutChar(fb, W, x + i, y, s[i], style);
+}
+
+void fbViewportDrawString(Framebuffer *fb, Window *W, int x, int y, const char *s, Style style)
+{
+    for (int i = 0; s[i] && x + i < fb->cols; i++)
+        fbViewportPutChar(fb, W, x + i, y, s[i], style);
+}
+
+void fbViewportEraseLine(Framebuffer *fb, Window *W, int y, Color color)
+{
+    for (int i = 0; i < W->viewport.cols; i++)
+        fbViewportPutChar(fb, W, i, y, ' ', (Style){color, color, 0});
+}
+
+void fbViewportEraseLineFrom(Framebuffer *fb, Window *W, int y, int x, Color color)
+{
+    for (int i = x; i < W->viewport.cols; i++)
+        fbViewportPutChar(fb, W, i, y, ' ', (Style){color, color, 0});
+}
 
 void abAppend(AppendBuffer *ab, const char *s, int len)
 {
