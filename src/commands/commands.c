@@ -59,10 +59,25 @@ void editorQuit(TextBuffer *buf, int fd)
     }
 }
 
+void command_handler_quit(int fd, int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    editorQuit(E.active_win->buf, fd);
+}
+
 void editorToggleLinenum(void)
 {
     E.active_win->linenums = !E.active_win->linenums;
 
     updateWindowSize();
+}
+
+void command_handler_line(int fd, int argc, char **argv)
+{
+    (void)fd;
+    (void)argc;
+    (void)argv;
+    editorToggleLinenum();
 }
 

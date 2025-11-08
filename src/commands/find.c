@@ -302,6 +302,17 @@ void editorFind(Window *W, int fd)
     }
 }
 
+void command_handler_find(int fd, int argc, char **argv)
+{
+    if (argc != 0)
+    {
+        free(E.last_search);
+        E.last_search = strdup(argv[0]);
+    }
+
+    editorFind(E.active_win, fd);
+}
+
 // static void editorReplaceWith(const char *query)
 // {
 

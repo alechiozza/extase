@@ -106,6 +106,15 @@ int editorOpen(Window *W, char *filename)
     return 0;
 }
 
+// TODO: implement
+void command_handler_open(int fd, int argc, char **argv)
+{
+    (void)fd;
+    (void)argc;
+    (void)argv;
+    //editorOpen(E.active_win, idk);
+}
+
 static char *editorRowsToString(TextBuffer *buf, int *buflen)
 {
     char *strbuf = NULL;
@@ -174,6 +183,19 @@ writeerr:
         close(fd);
     editorSetStatusMessage("Can't save! I/O error: %s", strerror(errno));
     return 1;
+}
+
+void command_handler_save(int fd, int argc, char **argv)
+{
+    (void)fd;
+    
+    if (argc != 0)
+    {
+        free(E.active_win->buf->filename);
+        E.active_win->buf->filename = strdup(argv[0]);
+    }
+
+    editorSave(E.active_win->buf);
 }
 
 int editorSaveAs(TextBuffer *buf, int fd)
