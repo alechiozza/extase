@@ -5,6 +5,7 @@
 
 #define TAB_SIZE 4
 #define TOPBAR_SIZE 1
+#define INFOBAR_SIZE 1
 #define LINENUMBER_SIZE 5
 
 #define EDITOR_QUERY_LEN 128
@@ -38,12 +39,12 @@ struct editorConfig
     ColorMode color_mode;
 
     Window *win[EDITOR_MAX_WIN];
-    Window *active_win;
-    int num_win;
-    TextBuffer buf;
+    size_t active_win;
+    size_t num_win;
 
-    // struct TextBuffer **buffers;
-    // int num_buffers;
+    TextBuffer buf;
+    struct TextBuffer **buffers; // TODO: implement
+    int num_buffers;
 
     bool relativenums; /* Enable line numbers relative numeration */
     bool rawmode;    /* Is terminal raw mode enabled? */

@@ -262,7 +262,7 @@ Style editorSyntaxToColor(int hl)
     }
 }
 
-static bool matchExtension(char *filename, char *extension)
+static bool matchExtension(const char *filename, const char *extension)
 {
     int flen = strlen(filename);
     int elen = strlen(extension);
@@ -279,7 +279,7 @@ static bool matchExtension(char *filename, char *extension)
     return true;
 }
 
-void editorSelectSyntaxHighlight(TextBuffer *buf, char *filename)
+void editorSelectSyntaxHighlight(TextBuffer *buf, const char *filename)
 {
     for (size_t j = 0; j < sizeof(HLDB) / sizeof(HLDB[0]); j++)
     {

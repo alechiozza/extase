@@ -32,7 +32,7 @@ typedef struct Syntax
     int flags;
 } Syntax;
 
-void editorSelectSyntaxHighlight(TextBuffer *buf, char *filename);
+void editorSelectSyntaxHighlight(TextBuffer *buf, const char *filename);
 Style editorSyntaxToColor(int hl);
 void editorUpdateSyntax(TextBuffer *buf, int row_idx);
 

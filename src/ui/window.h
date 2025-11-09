@@ -27,7 +27,9 @@ typedef struct Window
     bool linenums;
 } Window;
 
-void editorOpenWindow(void);
+void editorOpenWindow(const char *filename);
+void editorCloseWindow(void);
 void computeWindowLayout(void);
+void editorSwitchWindow(void);
 
 #endif /* __EDITOR_WINDOW_H */

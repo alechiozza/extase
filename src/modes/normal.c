@@ -27,43 +27,46 @@ void editorNMProcessKeypress(int fd)
          * to the edited file. */
         break;
     case CTRL_K:
-        editorScrollDown(E.active_win);    
+        editorScrollDown(E.win[E.active_win]);    
         break;
     case CTRL_Q:
-        editorQuit(E.active_win->buf, fd);
+        editorQuit(E.win[E.active_win]->buf, fd);
         break;
     case CTRL_S:
-        editorSave(E.active_win->buf);
+        editorSave(E.win[E.active_win]->buf);
         break;
     case CTRL_F:
-        editorFind(E.active_win, fd);
+        editorFind(E.win[E.active_win], fd);
         break;
     case CTRL_L:
         editorToggleLinenum();
         break;
     case PAGE_UP:
-        editorMoveCursorPageUp(E.active_win);
+        editorMoveCursorPageUp(E.win[E.active_win]);
         break;
     case PAGE_DOWN:
-        editorMoveCursorPageDown(E.active_win);
+        editorMoveCursorPageDown(E.win[E.active_win]);
         break;
     case ARROW_LEFT:
     case 'h':
-        editorMoveCursorLeft(E.active_win);
+        editorMoveCursorLeft(E.win[E.active_win]);
         break;
     case ARROW_RIGHT:
     case 'l':
-        editorMoveCursorRight(E.active_win);
+        editorMoveCursorRight(E.win[E.active_win]);
         break;
     case ARROW_UP:
     case 'k':
-        editorMoveCursorUp(E.active_win);
+        editorMoveCursorUp(E.win[E.active_win]);
         break;
     case ARROW_DOWN:
     case 'j':
-        editorMoveCursorDown(E.active_win);
+        editorMoveCursorDown(E.win[E.active_win]);
         break;
     case TAB:
+        break;
+    case CTRL_W:
+        editorSwitchWindow();
         break;
     case 'i':
     case 'I':

@@ -61,13 +61,13 @@ void fbDrawString(Framebuffer *fb, int x, int y, const char *s, Style style)
 void fbEraseLine(Framebuffer *fb, int y, Color color)
 {
     for (int i = 0; i < fb->cols; i++)
-        fbPutChar(fb, i, y, ' ', (Style){color, color, 0});
+        fbPutChar(fb, i, y, ' ', (Style){COLOR_DEFAULT_FG, color, 0});
 }
 
 void fbEraseLineFrom(Framebuffer *fb, int y, int x, Color color)
 {
     for (int i = x; i < fb->cols; i++)
-        fbPutChar(fb, i, y, ' ', (Style){color, color, 0});
+        fbPutChar(fb, i, y, ' ', (Style){COLOR_DEFAULT_FG, color, 0});
 }
 
 void fbWindowPutChar(Framebuffer *fb, Window *W, int x, int y, char c, Style style)
@@ -96,13 +96,13 @@ void fbWindowDrawString(Framebuffer *fb, Window *W, int x, int y, const char *s,
 void fbWindowEraseLine(Framebuffer *fb, Window *W, int y, Color color)
 {
     for (int i = 0; i < W->width; i++)
-        fbWindowPutChar(fb, W, i, y, ' ', (Style){color, color, 0});
+        fbWindowPutChar(fb, W, i, y, ' ', (Style){COLOR_DEFAULT_FG, color, 0});
 }
 
 void fbWindowEraseLineFrom(Framebuffer *fb, Window *W, int y, int x, Color color)
 {
     for (int i = x; i < W->width; i++)
-        fbWindowPutChar(fb, W, i, y, ' ', (Style){color, color, 0});
+        fbWindowPutChar(fb, W, i, y, ' ', (Style){COLOR_DEFAULT_FG, color, 0});
 }
 
 void fbViewportPutChar(Framebuffer *fb, Window *W, int x, int y, char c, Style style)
@@ -131,13 +131,13 @@ void fbViewportDrawString(Framebuffer *fb, Window *W, int x, int y, const char *
 void fbViewportEraseLine(Framebuffer *fb, Window *W, int y, Color color)
 {
     for (int i = 0; i < W->viewport.cols; i++)
-        fbViewportPutChar(fb, W, i, y, ' ', (Style){color, color, 0});
+        fbViewportPutChar(fb, W, i, y, ' ', (Style){COLOR_DEFAULT_FG, color, 0});
 }
 
 void fbViewportEraseLineFrom(Framebuffer *fb, Window *W, int y, int x, Color color)
 {
     for (int i = x; i < W->viewport.cols; i++)
-        fbViewportPutChar(fb, W, i, y, ' ', (Style){color, color, 0});
+        fbViewportPutChar(fb, W, i, y, ' ', (Style){COLOR_DEFAULT_FG, color, 0});
 }
 
 void abAppend(AppendBuffer *ab, const char *s, int len)

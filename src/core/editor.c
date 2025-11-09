@@ -13,17 +13,26 @@
 
 struct editorConfig E;
 
+static void initBuffer(TextBuffer *buf)
+{
+    buf->numrows = 0;
+    buf->rows = NULL;
+    buf->dirty = false;
+    buf->filename = NULL;
+    buf->syntax = NULL;
+}
+
 void initEditor(char *filename)
 {
     E.num_win = 0;
-
-    editorOpenWindow();
-
     E.relativenums = true;
     E.too_small = false;
     E.rawmode = false;
-    
     E.last_search = NULL;
+
+    E.color_mode = getColorMode();
+
+    initBuffer(&E.buf);
 
     updateWindowSize();
     signal(SIGWINCH, handleSigWinCh);
@@ -33,17 +42,12 @@ void initEditor(char *filename)
         editorFatalError("No tty\n");
         exit(EXIT_FAILURE);
     }
-    
-    E.color_mode = getColorMode();
 
     setCursorMode(CURSOR_BLINK_BAR);
     editorSetInsertMode();
 
-    for (int i = 0; i < E.num_win; i++)
-    {
-        editorSelectSyntaxHighlight(E.win[i]->buf, filename); // TODO: meh
-        editorOpen(E.win[i], filename);
-    }
+    editorOpenWindow(filename);
+    editorOpenWindow(filename);
 }
 
 void editorInsertChar(Window *W, int c)

@@ -4,6 +4,7 @@
 #include "term.h"
 #include "cursor.h"
 #include "event.h"
+#include "window.h"
 
 #include <ctype.h>
 
@@ -20,45 +21,48 @@ void editorIMProcessKeypress(int fd)
     {
     case ENTER:
     case CTRL_J:
-        editorInsertNewline(E.active_win);
+        editorInsertNewline(E.win[E.active_win]);
         break;
     case BACKSPACE:
     case CTRL_H:
-        editorDelChar(E.active_win);
+        editorDelChar(E.win[E.active_win]);
         break;
     case CTRL_K:
-        editorScrollDown(E.active_win);
+        editorScrollDown(E.win[E.active_win]);
         break;
     case DEL_KEY:
-        editorDelNextChar(E.active_win);
+        editorDelNextChar(E.win[E.active_win]);
         break;
     case PAGE_UP:
-        editorMoveCursorPageUp(E.active_win);
+        editorMoveCursorPageUp(E.win[E.active_win]);
         break;
     case PAGE_DOWN:
-        editorMoveCursorPageDown(E.active_win);
+        editorMoveCursorPageDown(E.win[E.active_win]);
         break;
     case ARROW_LEFT:
-        editorMoveCursorLeft(E.active_win);
+        editorMoveCursorLeft(E.win[E.active_win]);
         break;
     case ARROW_RIGHT:
-        editorMoveCursorRight(E.active_win);
+        editorMoveCursorRight(E.win[E.active_win]);
         break;
     case ARROW_UP:
-        editorMoveCursorUp(E.active_win);
+        editorMoveCursorUp(E.win[E.active_win]);
         break;
     case ARROW_DOWN:
-        editorMoveCursorDown(E.active_win);
+        editorMoveCursorDown(E.win[E.active_win]);
         break;
     case TAB:
-        editorInsertTab(E.active_win);
+        editorInsertTab(E.win[E.active_win]);
+        break;
+    case CTRL_W:
+        editorSwitchWindow();
         break;
     case ESC:
         editorSetNormalMode();
         break;
     default:
         if (isprint(c))
-            editorInsertChar(E.active_win, c);
+            editorInsertChar(E.win[E.active_win], c);
         break;
     }
 }

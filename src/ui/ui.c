@@ -31,7 +31,7 @@ static void drawInfoBar(Framebuffer *fb, Window *W)
     int len = snprintf(status, sizeof(status), 
             "%.20s - %d lines %s", W->buf->filename, W->buf->numrows, W->buf->dirty ? "(modified)" : "");
     int rlen = snprintf(rstatus, sizeof(rstatus),
-            "%d/%d", W->viewport.rowoff + W->cy + 1, W->buf->numrows);
+            "%d/%d ", W->viewport.rowoff + W->cy + 1, W->buf->numrows);
     if (len > W->width)
         len = W->width;
     
@@ -159,7 +159,8 @@ static void drawTextBuffer(Framebuffer *fb, Window *W)
             {
                 Style style = editorSyntaxToColor(hl[x]);
                 
-                if (y == W->cy && memcmp(&style.bg, &COLOR_DEFAULT_BG, sizeof(Color)) == 0)
+                if (E.win[E.active_win] == W && y == W->cy && 
+                    memcmp(&style.bg, &COLOR_DEFAULT_BG, sizeof(Color)) == 0)
                 {
                     /* The cursor line is highlighted  only if the background is the default one */
                     fbViewportPutChar(fb, W, x, y, *(c+x),
@@ -174,7 +175,7 @@ static void drawTextBuffer(Framebuffer *fb, Window *W)
 
         if (len < 0) len = 0; /* fuck me, it took an hour to figure this out */
 
-        if (y == W->cy)
+        if (E.win[E.active_win] == W && y == W->cy)
         {
             fbViewportEraseLineFrom(fb, W, y, len, COLOR_LNE_HIGHLIGHT);
         }
@@ -242,7 +243,7 @@ void editorRefreshScreen(void)
 
     // TODO: for every window
 
-    for (int i = 0; i < E.num_win; i++)
+    for (size_t i = 0; i < E.num_win; i++)
     {
         if (E.win[i]->buf->numrows == 0)
             drawWelcomeScreen(fb, E.win[i]);
@@ -262,8 +263,8 @@ void editorRefreshScreen(void)
 
         /* Set cursor position*/
         char buf[32];
-        int cx = computeCX(E.active_win);
-        int cy = computeCY(E.active_win);
+        int cx = computeCX(E.win[E.active_win]);
+        int cy = computeCY(E.win[E.active_win]);
         snprintf(buf, sizeof(buf), "\x1b[%d;%dH", cy, cx);
         abAppendString(&ab, buf);
     }

@@ -7,6 +7,7 @@
 #include "window.h"
 #include "core.h"
 #include "utils.h"
+#include "syntax.h"
 
 #include <stdio.h>
 #include <errno.h>
@@ -38,7 +39,7 @@ static bool isBinaryFile(const char *filename)
 
 static TextBuffer *findOpenBuffer(const char *filename)
 {
-    for (int i = 0; i < E.num_win; i++)
+    for (size_t i = 0; i < E.num_win; i++)
     {
         if (E.win[i]->buf->filename == NULL) continue;
         if (strcmp(E.win[i]->buf->filename, filename) == 0)
@@ -49,7 +50,7 @@ static TextBuffer *findOpenBuffer(const char *filename)
     return NULL;
 }
 
-int editorOpen(Window *W, char *filename)
+int editorOpen(Window *W, const char *filename)
 {
     TextBuffer *existing = findOpenBuffer(filename);
     if (existing != NULL)
@@ -66,6 +67,8 @@ int editorOpen(Window *W, char *filename)
     }
 
     TextBuffer *buf = W->buf;
+
+    editorSelectSyntaxHighlight(buf, filename);
 
     FILE *fp = fopen(filename, "r");
     if (!fp)
@@ -90,8 +93,11 @@ int editorOpen(Window *W, char *filename)
     ssize_t linelen;
     while ((linelen = getline(&line, &linecap, fp)) != -1)
     {
-        if (linelen && (line[linelen - 1] == '\n' || line[linelen - 1] == '\r'))
-            line[--linelen] = '\0';
+        while (linelen > 0 && ((line[linelen - 1] == '\n' || line[linelen - 1] == '\r')))
+        {
+            linelen--;
+        }
+        line[linelen] = '\0';
         editorInsertRow(buf, buf->numrows, line, linelen);
     }
     
@@ -112,7 +118,7 @@ void command_handler_open(int fd, int argc, char **argv)
     (void)fd;
     (void)argc;
     (void)argv;
-    //editorOpen(E.active_win, idk);
+    //editorOpen(E.win[E.active_win], idk);
 }
 
 static char *editorRowsToString(TextBuffer *buf, int *buflen)
@@ -191,11 +197,11 @@ void command_handler_save(int fd, int argc, char **argv)
     
     if (argc != 0)
     {
-        free(E.active_win->buf->filename);
-        E.active_win->buf->filename = strdup(argv[0]);
+        free(E.win[E.active_win]->buf->filename);
+        E.win[E.active_win]->buf->filename = strdup(argv[0]);
     }
 
-    editorSave(E.active_win->buf);
+    editorSave(E.win[E.active_win]->buf);
 }
 
 int editorSaveAs(TextBuffer *buf, int fd)

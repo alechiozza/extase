@@ -15,7 +15,10 @@
 void editorQuit(TextBuffer *buf, int fd)
 {
     if (buf->dirty == false)
-        exit(0);
+    {
+        editorCloseWindow();
+        return;
+    }
 
     char query[EDITOR_QUERY_LEN + 1] = {0};
     int qlen = 0;
@@ -43,7 +46,9 @@ void editorQuit(TextBuffer *buf, int fd)
         {
             if (!strcmp(query, "y") || !strcmp(query, "Y") || !strcmp(query, "yes") ||
                 !strcmp(query, "Yes") || !strcmp(query, "YES"))
-                exit(0);
+            {
+                editorCloseWindow();
+            }
 
             editorSetStatusMessage("");
             return;
@@ -63,12 +68,12 @@ void command_handler_quit(int fd, int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    editorQuit(E.active_win->buf, fd);
+    editorQuit(E.win[E.active_win]->buf, fd);
 }
 
 void editorToggleLinenum(void)
 {
-    E.active_win->linenums = !E.active_win->linenums;
+    E.win[E.active_win]->linenums = !E.win[E.active_win]->linenums;
 
     updateWindowSize();
 }

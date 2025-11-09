@@ -27,7 +27,7 @@ enum KEY_ACTION
     CTRL_T = 20,
     CTRL_U = 21,
     CTRL_V = 22,
-    CTRL_W = 23,
+    CTRL_W = 23,    /* Switch to next window */
     CTRL_X = 24,
     CTRL_Y = 25,    /* Redo */
     CTRL_Z = 26,    /* Undo */

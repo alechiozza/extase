@@ -1,38 +1,37 @@
 #include "window.h"
+
 #include "editor.h"
+#include "event.h"
+#include "commands.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 void computeWindowLayout(void)
 {
-    // TODO: implement
-    // for (int i = 0; i < E.num_win; i++)
-    // {
-    //     Window *W = E.win[i];
-    //     W->viewport.top = 0;
-    //     W->viewport.bottom = 2;
-    //     W->viewport.left = E.screencols/E.num_win * i;
-    //     W->viewport.right = E.screencols/E.num_win * (i+1);
-    // }
+    // TODO: for now just split horizontally
+    for (size_t i = 0; i < E.num_win; i++)
+    {
+        Window *W = E.win[i];
 
-    // TODO: Hardcoded for now
+        W->x = (E.screencols/E.num_win) * i;
+        W->y = 1;
+        W->viewport.top = 0;
+        W->viewport.bottom = INFOBAR_SIZE;
+        W->viewport.left = (W->linenums ? LINENUMBER_SIZE : 0);
+        W->viewport.right = 0;
+        W->width = E.screencols/E.num_win;
+        W->height = E.screenrows-TOPBAR_SIZE-INFOBAR_SIZE;
 
-    E.win[0]->x = 0;
-    E.win[0]->y = 1;
-    E.win[0]->viewport.top = 0;
-    E.win[0]->viewport.bottom = 1;
-    E.win[0]->viewport.left = (E.win[0]->linenums ? LINENUMBER_SIZE : 0);
-    E.win[0]->viewport.right = 0;
-    E.win[0]->width = E.screencols;
-    E.win[0]->height = E.screenrows-TOPBAR_SIZE-1;
+        W->viewport.rows = W->height - W->viewport.top - W->viewport.bottom;
+        W->viewport.cols = W->width - W->viewport.left - W->viewport.right;
 
-    E.win[0]->viewport.rows = E.win[0]->height - E.win[0]->viewport.top - E.win[0]->viewport.bottom;
-    E.win[0]->viewport.cols = E.win[0]->width - E.win[0]->viewport.left - E.win[0]->viewport.right;
+        if (W->cy > W->viewport.rows)
+            W->cy = W->viewport.rows - 1;
+        if (W->cx > W->viewport.cols)
+            W->cx = W->viewport.cols - 1;
 
-    if (E.win[0]->cy > E.win[0]->viewport.rows)
-        E.win[0]->cy = E.win[0]->viewport.rows - 1;
-    if (E.win[0]->cx > E.win[0]->viewport.cols)
-        E.win[0]->cx = E.win[0]->viewport.cols - 1;
+    }
 }
 
 static void windowInit(Window *W)
@@ -50,39 +49,62 @@ static void windowInit(Window *W)
     W->viewport.rowoff = 0;
     W->viewport.coloff = 0;
 
-    // TODO: HARDCODED
-    W->buf = &E.buf;
-
-    W->buf->numrows = 0;
-    W->buf->rows = NULL;
-    W->buf->dirty = false;
-    W->buf->filename = NULL;
-    W->buf->syntax = NULL;
+    W->buf = NULL;
 
     W->linenums = true;
 }
 
-void editorOpenWindow(void)
+void editorOpenWindow(const char *filename)
 {
-    if (E.num_win == EDITOR_MAX_WIN || E.num_win < 0) return;
+    if (E.num_win == EDITOR_MAX_WIN) return;
 
     Window *new_win = malloc(sizeof(Window));
     if (new_win == NULL)
     {
         // TODO: handle memory error
-        return;
+        editorFatalError("Fatal! Unable to create a new window\n");
+        exit(1);
     }
 
     E.win[E.num_win] = new_win;
-    E.active_win = new_win;
-
+    E.active_win = E.num_win;
     windowInit(new_win);
 
+    // TODO: hardcoded
+    E.win[E.num_win]->buf = &E.buf;
+
+    editorOpen(E.win[E.num_win], filename);
+
     E.num_win++;
+
+    computeWindowLayout();
 }
 
-void editorCloseWindow(Window *W)
+void editorCloseWindow(void)
 {
-    free(W);
+    size_t closing_idx = E.active_win;
+    free(E.win[closing_idx]);
+
+    if (closing_idx < E.num_win - 1)
+    {
+        memmove(&E.win[closing_idx], &E.win[closing_idx + 1], 
+            sizeof(Window *) * (E.num_win - 1 - closing_idx));
+    }
+
     E.num_win--;
+
+    if (E.num_win == 0)
+        exit(0);
+
+    if (E.active_win >= E.num_win)
+    {
+        E.active_win = E.num_win - 1;
+    }
+
+    computeWindowLayout();
+}
+
+void editorSwitchWindow(void)
+{
+    E.active_win = (E.active_win + 1) % E.num_win;
 }
