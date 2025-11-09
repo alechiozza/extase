@@ -20,6 +20,7 @@
 typedef struct Window Window;
 typedef struct Row Row;
 typedef struct Syntax Syntax;
+typedef struct LayoutNode LayoutNode;
 
 typedef struct TextBuffer
 {
@@ -38,14 +39,16 @@ struct editorConfig
     int screencols;
     ColorMode color_mode;
 
+    LayoutNode *layout_root;
     Window *win[EDITOR_MAX_WIN];
-    size_t active_win;
+    Window *active_win;
     size_t num_win;
 
     TextBuffer buf;
     struct TextBuffer **buffers; // TODO: implement
     int num_buffers;
 
+    bool linenums;
     bool relativenums; /* Enable line numbers relative numeration */
     bool rawmode;    /* Is terminal raw mode enabled? */
     bool too_small;  /* The screen is too small to be rendered */

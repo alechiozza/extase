@@ -310,7 +310,7 @@ void command_handler_find(int fd, int argc, char **argv)
         E.last_search = strdup(argv[0]);
     }
 
-    editorFind(E.win[E.active_win], fd);
+    editorFind(E.active_win, fd);
 }
 
 // static void editorReplaceWith(const char *query)

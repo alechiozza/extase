@@ -6,32 +6,111 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
-void computeWindowLayout(void)
+static void computeNodeLayout(LayoutNode *node)
 {
-    // TODO: for now just split horizontally
-    for (size_t i = 0; i < E.num_win; i++)
-    {
-        Window *W = E.win[i];
+    if (!node)
+        return;
 
-        W->x = (E.screencols/E.num_win) * i;
-        W->y = 1;
+    switch (node->type)
+    {
+    case LAYOUT_LEAF:
+    {
+        Window *W = node->window;
+        if (!W)
+            return;
+
+        W->x = node->x;
+        W->y = node->y;
+        W->width = node->width;
+        W->height = node->height;
+
+        int left_padding = (E.linenums ? LINENUMBER_SIZE : 0);
+
         W->viewport.top = 0;
         W->viewport.bottom = INFOBAR_SIZE;
-        W->viewport.left = (W->linenums ? LINENUMBER_SIZE : 0);
+        W->viewport.left = left_padding;
         W->viewport.right = 0;
-        W->width = E.screencols/E.num_win;
-        W->height = E.screenrows-TOPBAR_SIZE-INFOBAR_SIZE;
 
         W->viewport.rows = W->height - W->viewport.top - W->viewport.bottom;
         W->viewport.cols = W->width - W->viewport.left - W->viewport.right;
 
-        if (W->cy > W->viewport.rows)
-            W->cy = W->viewport.rows - 1;
-        if (W->cx > W->viewport.cols)
-            W->cx = W->viewport.cols - 1;
+        if (W->viewport.rows < 0)
+            W->viewport.rows = 0;
+        if (W->viewport.cols < 0)
+            W->viewport.cols = 0;
 
+        if (W->cy >= W->viewport.rows)
+        {
+            W->cy = (W->viewport.rows > 0) ? W->viewport.rows - 1 : 0;
+        }
+        if (W->cx >= W->viewport.cols)
+        {
+            W->cx = (W->viewport.cols > 0) ? W->viewport.cols - 1 : 0;
+        }
+        break;
     }
+
+    case LAYOUT_SPLIT_VERTICAL:
+    {
+        if (!node->child1 || !node->child2)
+            return;
+
+        int child1_width = (int)(node->width * node->ratio);
+        int child2_width = node->width - child1_width;
+
+        node->child1->x = node->x;
+        node->child1->y = node->y;
+        node->child1->width = child1_width;
+        node->child1->height = node->height;
+
+        node->child2->x = node->x + child1_width;
+        node->child2->y = node->y;
+        node->child2->width = child2_width;
+        node->child2->height = node->height;
+
+        computeNodeLayout(node->child1);
+        computeNodeLayout(node->child2);
+        break;
+    }
+
+    case LAYOUT_SPLIT_HORIZONTAL:
+    {
+        if (!node->child1 || !node->child2)
+            return;
+
+        int child1_height = (int)(node->height * node->ratio);
+        int child2_height = node->height - child1_height;
+
+        node->child1->x = node->x;
+        node->child1->y = node->y;
+        node->child1->width = node->width;
+        node->child1->height = child1_height;
+
+        node->child2->x = node->x;
+        node->child2->y = node->y + child1_height;
+        node->child2->width = node->width;
+        node->child2->height = child2_height;
+
+        computeNodeLayout(node->child1);
+        computeNodeLayout(node->child2);
+        break;
+    }
+    }
+}
+
+void computeWindowLayout(void)
+{
+    if (!E.layout_root)
+        return;
+
+    E.layout_root->x = 0;
+    E.layout_root->y = TOPBAR_SIZE;
+    E.layout_root->width = E.screencols;
+    E.layout_root->height = E.screenrows - TOPBAR_SIZE - INFOBAR_SIZE;
+
+    computeNodeLayout(E.layout_root);
 }
 
 static void windowInit(Window *W)
@@ -39,6 +118,8 @@ static void windowInit(Window *W)
     W->cx = 0;
     W->cy = 0;
     W->expected_cx = 0;
+    W->buf = NULL;
+    W->node = NULL;
 
     W->viewport.top = 0;
     W->viewport.bottom = 0;
@@ -48,15 +129,12 @@ static void windowInit(Window *W)
     W->viewport.horizontal_margin = 0;
     W->viewport.rowoff = 0;
     W->viewport.coloff = 0;
-
-    W->buf = NULL;
-
-    W->linenums = true;
 }
 
-void editorOpenWindow(const char *filename)
+Window *editorCreateWindow(void)
 {
-    if (E.num_win == EDITOR_MAX_WIN) return;
+    if (E.num_win == EDITOR_MAX_WIN)
+        return NULL;
 
     Window *new_win = malloc(sizeof(Window));
     if (new_win == NULL)
@@ -67,44 +145,246 @@ void editorOpenWindow(const char *filename)
     }
 
     E.win[E.num_win] = new_win;
-    E.active_win = E.num_win;
+    E.active_win = new_win;
     windowInit(new_win);
-
-    // TODO: hardcoded
-    E.win[E.num_win]->buf = &E.buf;
-
-    editorOpen(E.win[E.num_win], filename);
 
     E.num_win++;
 
-    computeWindowLayout();
+    return new_win;
 }
 
-void editorCloseWindow(void)
+static void destroyWindow(Window *W)
 {
-    size_t closing_idx = E.active_win;
-    free(E.win[closing_idx]);
+    if (W == NULL)
+        return;
 
-    if (closing_idx < E.num_win - 1)
+    int found_idx = -1;
+    for (size_t i = 0; i < E.num_win; i++)
     {
-        memmove(&E.win[closing_idx], &E.win[closing_idx + 1], 
-            sizeof(Window *) * (E.num_win - 1 - closing_idx));
+        if (E.win[i] == W)
+        {
+            found_idx = i;
+            break;
+        }
+    }
+
+    if (found_idx == -1)
+    {
+        /* Should be unreachable */
+        editorFatalError("Fatal! Tried to destroy a window that isn't in the global list.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    free(E.win[found_idx]);
+
+    int remaining_elements = E.num_win - 1 - found_idx;
+
+    if (remaining_elements > 0)
+    {
+        memmove(&E.win[found_idx], &E.win[found_idx + 1], sizeof(Window *) * remaining_elements);
     }
 
     E.num_win--;
 
-    if (E.num_win == 0)
+    E.win[E.num_win] = NULL; /* just to be sure */
+}
+
+void editorCloseWindow(void)
+{
+    if (E.num_win <= 1)
         exit(0);
 
-    if (E.active_win >= E.num_win)
+    Window *winToClose = E.active_win;
+    LayoutNode *leafToClose = winToClose->node;
+
+    if (!leafToClose || leafToClose->type != LAYOUT_LEAF)
     {
-        E.active_win = E.num_win - 1;
+        // editorWarningError("Fatal! a window has invalid layout node.\n");
+        return;
     }
+
+    LayoutNode *splitNode = leafToClose->parent;
+    if (!splitNode)
+    {
+        // editorWarningError("Fatal! Attempting to close root leaf when other windows exist.\n");
+        return;
+    }
+
+    LayoutNode *siblingNode = (splitNode->child1 == leafToClose) ? splitNode->child2 : splitNode->child1;
+    LayoutNode *grandParent = splitNode->parent;
+
+    if (grandParent == NULL)
+    {
+        E.layout_root = siblingNode;
+        siblingNode->parent = NULL;
+    }
+    else
+    {
+        if (grandParent->child1 == splitNode)
+        {
+            grandParent->child1 = siblingNode;
+        }
+        else
+        {
+            grandParent->child2 = siblingNode;
+        }
+        siblingNode->parent = grandParent;
+    }
+
+    LayoutNode *newActiveNode = siblingNode;
+    while (newActiveNode && newActiveNode->type != LAYOUT_LEAF)
+    {
+        newActiveNode = newActiveNode->child1;
+    }
+
+    if (newActiveNode && newActiveNode->window)
+    {
+        E.active_win = newActiveNode->window;
+    }
+    else
+    {
+        E.active_win = E.win[0];
+    }
+
+    destroyWindow(winToClose);
+
+    free(leafToClose);
+    free(splitNode);
 
     computeWindowLayout();
 }
 
-void editorSwitchWindow(void)
+void editorSwitchWindow(Direction dir)
 {
-    E.active_win = (E.active_win + 1) % E.num_win;
+    /* NOTE: Originally I implemented this walking up and 
+    down the tree to find the correct window to switch to... 
+    But the code turned out to be much more long and complex 
+    Theorically this geometrical approach here is slower (O(N))
+    but the tradeoff is minimal and it's way clener. */
+
+    if (E.num_win <= 1 || !E.active_win)
+    {
+        return;
+    }
+
+    Window *a = E.active_win;
+    Window *nearest = NULL;
+
+    for (size_t i = 0; i < E.num_win && !nearest; i++)
+    {
+        Window *c = E.win[i];
+
+        if (c == a) continue;
+
+        switch (dir)
+        {
+        case DIR_RIGHT:
+            if (a->y >= c->y && 
+                a->y < c->y + c->height &&
+                c->x - (a->x + a->width) == 0)
+            {
+                nearest = c;
+            }
+            break;
+        case DIR_LEFT:
+            if (a->y >= c->y && 
+                a->y < c->y + c->height &&
+                a->x - (c->x + c->width) == 0)
+            {
+                nearest = c;
+            }
+            break;
+        case DIR_DOWN:
+            if (a->x >= c->x && 
+                a->x < c->x + c->width &&
+                c->y - (a->y + a->height) == 0)
+            {
+                nearest = c;
+            }
+            break;
+        case DIR_UP:
+            if (a->x >= c->x && 
+                a->x < c->x + c->width &&
+                a->y - (c->y + c->height) == 0)
+            {
+                nearest = c;
+            }
+            break;
+        }
+    }
+
+    if (nearest != NULL)
+    {
+        E.active_win = nearest;
+    }
+}
+
+void editorSplitWindow(bool split) /* TODO: check if there's enough space for the split */
+{
+    Window *original_win = E.active_win;
+    if (!original_win)
+        return;
+
+    LayoutNode *original_leaf = original_win->node;
+    if (!original_leaf || original_leaf->type != LAYOUT_LEAF)
+    {
+        return;
+    }
+
+    LayoutNode *new_leaf = malloc(sizeof(LayoutNode));
+    if (!new_leaf)
+    {
+        // TODO: handle memory error
+        return;
+    }
+    new_leaf->type = LAYOUT_LEAF;
+
+    Window *new_win = editorCreateWindow();
+    if (!new_win)
+    {
+        E.active_win = original_win;
+        return;
+    }
+
+    new_win->buf = original_win->buf;
+    new_win->viewport = original_win->viewport;
+    new_win->cx = original_win->cx;
+    new_win->cy = original_win->cy;
+    new_win->expected_cx = original_win->expected_cx;
+    new_win->node = new_leaf;
+    new_leaf->window = new_win;
+
+    LayoutNode *newSplitNode = malloc(sizeof(LayoutNode));
+    if (!newSplitNode)
+    {
+        free(new_leaf);
+        free(new_win);
+        E.num_win--;
+        E.active_win = original_win;
+        return;
+    }
+    newSplitNode->type = (split == SPLIT_VERTICAL) ? LAYOUT_SPLIT_VERTICAL : LAYOUT_SPLIT_HORIZONTAL;
+    newSplitNode->ratio = 0.5;
+    newSplitNode->parent = original_leaf->parent;
+
+    if (newSplitNode->parent == NULL)
+    {
+        E.layout_root = newSplitNode;
+    }
+    else if (newSplitNode->parent->child1 == original_leaf)
+    {
+        newSplitNode->parent->child1 = newSplitNode;
+    }
+    else
+    {
+        newSplitNode->parent->child2 = newSplitNode;
+    }
+
+    newSplitNode->child1 = original_leaf;
+    newSplitNode->child2 = new_leaf;
+
+    original_leaf->parent = newSplitNode;
+    new_leaf->parent = newSplitNode;
+
+    computeWindowLayout();
 }

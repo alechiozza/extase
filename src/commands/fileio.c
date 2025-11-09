@@ -118,7 +118,7 @@ void command_handler_open(int fd, int argc, char **argv)
     (void)fd;
     (void)argc;
     (void)argv;
-    //editorOpen(E.win[E.active_win], idk);
+    //editorOpen(E.active_win, idk);
 }
 
 static char *editorRowsToString(TextBuffer *buf, int *buflen)
@@ -197,11 +197,11 @@ void command_handler_save(int fd, int argc, char **argv)
     
     if (argc != 0)
     {
-        free(E.win[E.active_win]->buf->filename);
-        E.win[E.active_win]->buf->filename = strdup(argv[0]);
+        free(E.active_win->buf->filename);
+        E.active_win->buf->filename = strdup(argv[0]);
     }
 
-    editorSave(E.win[E.active_win]->buf);
+    editorSave(E.active_win->buf);
 }
 
 int editorSaveAs(TextBuffer *buf, int fd)

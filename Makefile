@@ -16,7 +16,7 @@ DEPS = $(OBJS:%.o=%.d)
 
 .PHONY: all
 all: $(BUILD_DIR)/$(TARGET)
-	@echo "Bomboclat."
+	@echo "Build completed."
 
 $(BUILD_DIR)/$(TARGET): $(OBJS)
 	@echo "LD  $@"

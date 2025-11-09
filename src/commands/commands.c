@@ -68,12 +68,12 @@ void command_handler_quit(int fd, int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    editorQuit(E.win[E.active_win]->buf, fd);
+    editorQuit(E.active_win->buf, fd);
 }
 
 void editorToggleLinenum(void)
 {
-    E.win[E.active_win]->linenums = !E.win[E.active_win]->linenums;
+    E.linenums = !E.linenums;
 
     updateWindowSize();
 }

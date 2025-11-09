@@ -18,7 +18,7 @@ enum KEY_ACTION
     CTRL_K = 11,
     CTRL_L = 12,     /* Toggle line numbers */
     ENTER = 13,      /* Enter */
-    CTRL_N = 14,
+    CTRL_N = 14,     /* Spawn new window */
     CTRL_O = 15,     /* Open, TODO: implement */
     CTRL_P = 16,
     CTRL_Q = 17,

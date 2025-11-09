@@ -95,7 +95,7 @@ static void drawWelcomeScreen(Framebuffer *fb, Window *W)
     {
         int filerow = W->viewport.rowoff + y;
 
-        if (W->linenums)
+        if (E.linenums)
             drawLineNumber(fb, W, filerow, y);
 
         if (y == W->viewport.rows / 3)
@@ -130,7 +130,7 @@ static void drawTextBuffer(Framebuffer *fb, Window *W)
     {
         int filerow = W->viewport.rowoff + y;
 
-        if (W->linenums)
+        if (E.linenums)
             drawLineNumber(fb, W, filerow, y);
 
         if (filerow >= W->buf->numrows)
@@ -159,7 +159,7 @@ static void drawTextBuffer(Framebuffer *fb, Window *W)
             {
                 Style style = editorSyntaxToColor(hl[x]);
                 
-                if (E.win[E.active_win] == W && y == W->cy && 
+                if (E.active_win == W && y == W->cy && 
                     memcmp(&style.bg, &COLOR_DEFAULT_BG, sizeof(Color)) == 0)
                 {
                     /* The cursor line is highlighted  only if the background is the default one */
@@ -175,7 +175,7 @@ static void drawTextBuffer(Framebuffer *fb, Window *W)
 
         if (len < 0) len = 0; /* fuck me, it took an hour to figure this out */
 
-        if (E.win[E.active_win] == W && y == W->cy)
+        if (E.active_win == W && y == W->cy)
         {
             fbViewportEraseLineFrom(fb, W, y, len, COLOR_LNE_HIGHLIGHT);
         }
@@ -263,8 +263,8 @@ void editorRefreshScreen(void)
 
         /* Set cursor position*/
         char buf[32];
-        int cx = computeCX(E.win[E.active_win]);
-        int cy = computeCY(E.win[E.active_win]);
+        int cx = computeCX(E.active_win);
+        int cy = computeCY(E.active_win);
         snprintf(buf, sizeof(buf), "\x1b[%d;%dH", cy, cx);
         abAppendString(&ab, buf);
     }

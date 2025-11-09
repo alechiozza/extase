@@ -22,14 +22,47 @@ static void initBuffer(TextBuffer *buf)
     buf->syntax = NULL;
 }
 
+static void initWindow(const char *filename)
+{
+    editorCreateWindow();
+    // TODO: hardcoded
+    E.active_win->buf = &E.buf;
+    editorOpen(E.active_win, filename);
+}
+
+static void initLayout(void)
+{
+    if (E.active_win == NULL) return;
+
+    LayoutNode *rootNode = malloc(sizeof(LayoutNode));
+    if (!rootNode)
+    {
+        editorFatalError("Fatal! Memory error\n");
+        exit(1);
+    }
+
+    rootNode->type = LAYOUT_LEAF;
+    rootNode->parent = NULL;
+    rootNode->child1 = NULL;
+    rootNode->child2 = NULL;
+    rootNode->window = E.active_win;
+
+    E.layout_root = rootNode;
+    E.active_win->node = E.layout_root;
+
+    computeWindowLayout();
+}
+
 void initEditor(char *filename)
 {
+    E.active_win = NULL;
+    E.linenums = true;
     E.num_win = 0;
     E.relativenums = true;
     E.too_small = false;
     E.rawmode = false;
     E.last_search = NULL;
-
+    E.layout_root = NULL;
     E.color_mode = getColorMode();
 
     initBuffer(&E.buf);
@@ -44,10 +77,11 @@ void initEditor(char *filename)
     }
 
     setCursorMode(CURSOR_BLINK_BAR);
+
     editorSetInsertMode();
 
-    editorOpenWindow(filename);
-    editorOpenWindow(filename);
+    initWindow(filename);
+    initLayout();
 }
 
 void editorInsertChar(Window *W, int c)

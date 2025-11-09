@@ -16,6 +16,42 @@ void editorSetNormalMode(void)
     editorSetStatusMessage("HELP: Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find | ':' = command shell");
 }
 
+static void processWindowMode(int fd)
+{
+    int c = editorReadKey(fd);
+    switch (c)
+    {
+        case '+':
+            /* TODO: change window height */
+            break;
+        case ARROW_LEFT:
+        case 'h':
+            editorSwitchWindow(DIR_LEFT);
+            break;
+        case ARROW_DOWN:
+        case 'j':
+            editorSwitchWindow(DIR_DOWN);
+            break;
+        case ARROW_UP:
+        case 'k':
+            editorSwitchWindow(DIR_UP);
+            break;
+        case ARROW_RIGHT:
+        case 'l':
+            editorSwitchWindow(DIR_RIGHT);
+            break;
+        case 'q':
+            editorQuit(E.active_win->buf, fd);
+            break;
+        case '|':
+            editorSplitWindow(SPLIT_VERTICAL);
+            break;
+        case '-':
+            editorSplitWindow(SPLIT_HORIZONTAL);
+            break;
+    }
+}
+
 void editorNMProcessKeypress(int fd)
 {
     int c = editorReadKey(fd);
@@ -27,46 +63,46 @@ void editorNMProcessKeypress(int fd)
          * to the edited file. */
         break;
     case CTRL_K:
-        editorScrollDown(E.win[E.active_win]);    
+        editorScrollDown(E.active_win);    
         break;
     case CTRL_Q:
-        editorQuit(E.win[E.active_win]->buf, fd);
+        editorQuit(E.active_win->buf, fd);
         break;
     case CTRL_S:
-        editorSave(E.win[E.active_win]->buf);
+        editorSave(E.active_win->buf);
         break;
     case CTRL_F:
-        editorFind(E.win[E.active_win], fd);
+        editorFind(E.active_win, fd);
         break;
     case CTRL_L:
         editorToggleLinenum();
         break;
     case PAGE_UP:
-        editorMoveCursorPageUp(E.win[E.active_win]);
+        editorMoveCursorPageUp(E.active_win);
         break;
     case PAGE_DOWN:
-        editorMoveCursorPageDown(E.win[E.active_win]);
+        editorMoveCursorPageDown(E.active_win);
         break;
     case ARROW_LEFT:
     case 'h':
-        editorMoveCursorLeft(E.win[E.active_win]);
+        editorMoveCursorLeft(E.active_win);
         break;
     case ARROW_RIGHT:
     case 'l':
-        editorMoveCursorRight(E.win[E.active_win]);
+        editorMoveCursorRight(E.active_win);
         break;
     case ARROW_UP:
     case 'k':
-        editorMoveCursorUp(E.win[E.active_win]);
+        editorMoveCursorUp(E.active_win);
         break;
     case ARROW_DOWN:
     case 'j':
-        editorMoveCursorDown(E.win[E.active_win]);
+        editorMoveCursorDown(E.active_win);
         break;
     case TAB:
         break;
     case CTRL_W:
-        editorSwitchWindow();
+        processWindowMode(fd);
         break;
     case 'i':
     case 'I':

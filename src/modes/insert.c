@@ -21,48 +21,45 @@ void editorIMProcessKeypress(int fd)
     {
     case ENTER:
     case CTRL_J:
-        editorInsertNewline(E.win[E.active_win]);
+        editorInsertNewline(E.active_win);
         break;
     case BACKSPACE:
     case CTRL_H:
-        editorDelChar(E.win[E.active_win]);
+        editorDelChar(E.active_win);
         break;
     case CTRL_K:
-        editorScrollDown(E.win[E.active_win]);
+        editorScrollDown(E.active_win);
         break;
     case DEL_KEY:
-        editorDelNextChar(E.win[E.active_win]);
+        editorDelNextChar(E.active_win);
         break;
     case PAGE_UP:
-        editorMoveCursorPageUp(E.win[E.active_win]);
+        editorMoveCursorPageUp(E.active_win);
         break;
     case PAGE_DOWN:
-        editorMoveCursorPageDown(E.win[E.active_win]);
+        editorMoveCursorPageDown(E.active_win);
         break;
     case ARROW_LEFT:
-        editorMoveCursorLeft(E.win[E.active_win]);
+        editorMoveCursorLeft(E.active_win);
         break;
     case ARROW_RIGHT:
-        editorMoveCursorRight(E.win[E.active_win]);
+        editorMoveCursorRight(E.active_win);
         break;
     case ARROW_UP:
-        editorMoveCursorUp(E.win[E.active_win]);
+        editorMoveCursorUp(E.active_win);
         break;
     case ARROW_DOWN:
-        editorMoveCursorDown(E.win[E.active_win]);
+        editorMoveCursorDown(E.active_win);
         break;
     case TAB:
-        editorInsertTab(E.win[E.active_win]);
-        break;
-    case CTRL_W:
-        editorSwitchWindow();
+        editorInsertTab(E.active_win);
         break;
     case ESC:
         editorSetNormalMode();
         break;
     default:
         if (isprint(c))
-            editorInsertChar(E.win[E.active_win], c);
+            editorInsertChar(E.active_win, c);
         break;
     }
 }
