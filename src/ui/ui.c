@@ -62,7 +62,7 @@ static void drawScrollBar(Framebuffer *fb, Window *W)
     }
 
     float hratio = (float)W->viewport.rows/W->buf->numrows;
-    if (hratio > 1) hratio = 1;
+    if (hratio > 1) return;
     int h = (W->height-1)*hratio;
 
     float yratio = (float)W->viewport.rowoff/W->buf->numrows;
