@@ -58,6 +58,7 @@ typedef struct Style
 #define COLOR_DEFAULT_BG        COLOR_BLACK
 
 #define COLOR_LNE_HIGHLIGHT     (Color){ 40,  40,  40}
+#define COLOR_UI_BLACK          (Color){ 50,  50,  50}
 
 #define STYLE_NORMAL        (Style){COLOR_DEFAULT_FG, COLOR_DEFAULT_BG, 0}
 #define STYLE_INVERSE       (Style){COLOR_DEFAULT_BG, COLOR_DEFAULT_FG, 0}

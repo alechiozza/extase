@@ -190,3 +190,12 @@ void editorScrollDown(Window *W)
 
     fixCursorX(W);
 }
+
+void editorCursorReset(Window *W)
+{
+    W->cx = 0;
+    W->cy = 0;
+    W->expected_cx = 0;
+    W->viewport.rowoff = 0;
+    W->viewport.coloff = 0;
+}

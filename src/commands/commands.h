@@ -7,6 +7,7 @@ typedef struct Window Window;
 void editorShell(int fd);
 
 int editorOpen(Window *W, const char *filename);
+void editorOpenFromWin(Window *W, int fd);
 int editorSave(TextBuffer *buf);
 int editorSaveAs(TextBuffer *buf, int fd);
 void editorQuit(TextBuffer *buf, int fd);

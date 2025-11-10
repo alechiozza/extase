@@ -20,9 +20,9 @@ static void drawTopBar(Framebuffer *fb)
     char topbar[80];
     int topbarlen = snprintf(topbar, sizeof(topbar),
         "   Extase %s", EDITOR_VERSION);
-    fbDrawChars(fb, 0, 0, topbar, topbarlen, (Style){COLOR_BLACK, COLOR_BRIGHT_BLACK,0});
+    fbDrawChars(fb, 0, 0, topbar, topbarlen, (Style){COLOR_WHITE, COLOR_UI_BLACK,0});
 
-    fbEraseLineFrom(fb, 0, topbarlen, COLOR_BRIGHT_BLACK);
+    fbEraseLineFrom(fb, 0, topbarlen, COLOR_UI_BLACK);
 }
 
 static void drawInfoBar(Framebuffer *fb, Window *W)
@@ -35,22 +35,46 @@ static void drawInfoBar(Framebuffer *fb, Window *W)
     if (len > W->width)
         len = W->width;
     
-    fbWindowDrawChars(fb, W, 0, W->height-1, status, len, (Style){COLOR_BLACK, COLOR_BRIGHT_BLACK,0});
+    fbWindowDrawChars(fb, W, 0, W->height-1, status, len, (Style){COLOR_WHITE, COLOR_UI_BLACK,0});
 
     while (len < W->width)
     {
         if (W->width - len == rlen)
         {
             fbWindowDrawChars(fb, W, len, W->height-1, rstatus, rlen, 
-                (Style){COLOR_BLACK, COLOR_BRIGHT_BLACK,0});
+                (Style){COLOR_WHITE, COLOR_UI_BLACK,0});
             break;
         }
         else
         {
             fbWindowPutChar(fb, W, len, W->height-1, ' ',
-                (Style){COLOR_BLACK, COLOR_BRIGHT_BLACK,0});
+                (Style){COLOR_WHITE, COLOR_UI_BLACK,0});
         }
         len++;
+    }
+}
+
+static void drawScrollBar(Framebuffer *fb, Window *W)
+{
+    for (int i = 0; i < W->height-1; i++)
+    {
+        fbWindowPutChar(fb, W, W->width-1, i, ' ', STYLE_NORMAL);
+    }
+
+    float hratio = (float)W->viewport.rows/W->buf->numrows;
+    if (hratio > 1) hratio = 1;
+    int h = (W->height-1)*hratio;
+
+    float yratio = (float)W->viewport.rowoff/W->buf->numrows;
+    if (yratio > 1) yratio = 1;
+
+    int y = (W->height-1)*yratio;
+
+    if (h+y > W->height) y = W->height-1 - h;
+
+    for (int i = y; i < y+h; i++)
+    {
+        fbWindowPutChar(fb, W, W->width-1, i, ' ', STYLE_INVERSE);
     }
 }
 
@@ -251,6 +275,7 @@ void editorRefreshScreen(void)
             drawTextBuffer(fb, E.win[i]);
 
         drawInfoBar(fb, E.win[i]);
+        drawScrollBar(fb, E.win[i]);
     }
 
     drawStatusBar(fb);

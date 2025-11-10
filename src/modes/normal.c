@@ -77,6 +77,9 @@ void editorNMProcessKeypress(int fd)
     case CTRL_L:
         editorToggleLinenum();
         break;
+    case CTRL_O:
+        editorOpenFromWin(E.active_win, fd);
+        break;
     case PAGE_UP:
         editorMoveCursorPageUp(E.active_win);
         break;
@@ -110,6 +113,10 @@ void editorNMProcessKeypress(int fd)
         break;
     case 'r':
         E.relativenums = !E.relativenums;
+        break;
+    case 'o':
+        editorSetInsertMode();
+        editorInsertNewline(E.active_win);
         break;
     case ':':
         editorShell(STDIN_FILENO);

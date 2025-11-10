@@ -16,4 +16,6 @@ void editorCenterCursor(Window *W);
 void editorScrollUp(Window *W);
 void editorScrollDown(Window *W);
 
+void editorCursorReset(Window *W);
+
 #endif /* __EDITOR_CURSOR_H */

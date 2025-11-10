@@ -13,20 +13,9 @@
 
 struct editorConfig E;
 
-static void initBuffer(TextBuffer *buf)
-{
-    buf->numrows = 0;
-    buf->rows = NULL;
-    buf->dirty = false;
-    buf->filename = NULL;
-    buf->syntax = NULL;
-}
-
 static void initWindow(const char *filename)
 {
     editorCreateWindow();
-    // TODO: hardcoded
-    E.active_win->buf = &E.buf;
     editorOpen(E.active_win, filename);
 }
 
@@ -58,14 +47,13 @@ void initEditor(char *filename)
     E.active_win = NULL;
     E.linenums = true;
     E.num_win = 0;
+    E.num_buf = 0;
     E.relativenums = true;
     E.too_small = false;
     E.rawmode = false;
     E.last_search = NULL;
     E.layout_root = NULL;
     E.color_mode = getColorMode();
-
-    initBuffer(&E.buf);
 
     updateWindowSize();
     signal(SIGWINCH, handleSigWinCh);

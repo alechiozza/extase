@@ -31,7 +31,7 @@ static void computeNodeLayout(LayoutNode *node)
         W->viewport.top = 0;
         W->viewport.bottom = INFOBAR_SIZE;
         W->viewport.left = left_padding;
-        W->viewport.right = 0;
+        W->viewport.right = SCROLLBAR_SIZE;
 
         W->viewport.rows = W->height - W->viewport.top - W->viewport.bottom;
         W->viewport.cols = W->width - W->viewport.left - W->viewport.right;
@@ -173,6 +173,32 @@ static void destroyWindow(Window *W)
         /* Should be unreachable */
         editorFatalError("Fatal! Tried to destroy a window that isn't in the global list.\n");
         exit(EXIT_FAILURE);
+    }
+
+    bool found_buf = false;
+    for (size_t i = 0; i < E.num_win; i++)
+    {
+        if (i != (size_t)found_idx && E.win[found_idx]->buf == E.win[i]->buf)
+        {
+            found_buf = true;
+            break;
+        }
+    }
+
+    if (!found_buf)
+    {
+        free(E.buf[found_buf]);
+
+        int remaining_elements = E.num_buf - 1 - found_buf;
+
+        if (remaining_elements > 0)
+        {
+            memmove(&E.buf[found_buf], &E.buf[found_buf + 1], sizeof(TextBuffer *) * remaining_elements);
+        }
+
+        E.num_buf--;
+
+        E.buf[E.num_buf] = NULL;
     }
 
     free(E.win[found_idx]);

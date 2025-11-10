@@ -6,6 +6,7 @@
 #define TAB_SIZE 4
 #define TOPBAR_SIZE 1
 #define INFOBAR_SIZE 1
+#define SCROLLBAR_SIZE 1
 #define LINENUMBER_SIZE 5
 
 #define EDITOR_QUERY_LEN 128
@@ -32,6 +33,7 @@ typedef struct TextBuffer
 } TextBuffer;
 
 #define EDITOR_MAX_WIN 10
+#define EDITOR_MAX_BUF 10
 
 struct editorConfig
 {
@@ -44,9 +46,8 @@ struct editorConfig
     Window *active_win;
     size_t num_win;
 
-    TextBuffer buf;
-    struct TextBuffer **buffers; // TODO: implement
-    int num_buffers;
+    TextBuffer *buf[EDITOR_MAX_BUF];
+    size_t num_buf;
 
     bool linenums;
     bool relativenums; /* Enable line numbers relative numeration */

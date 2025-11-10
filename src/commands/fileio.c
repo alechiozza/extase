@@ -8,6 +8,7 @@
 #include "core.h"
 #include "utils.h"
 #include "syntax.h"
+#include "cursor.h"
 
 #include <stdio.h>
 #include <errno.h>
@@ -39,23 +40,63 @@ static bool isBinaryFile(const char *filename)
 
 static TextBuffer *findOpenBuffer(const char *filename)
 {
-    for (size_t i = 0; i < E.num_win; i++)
+    for (size_t i = 0; i < E.num_buf; i++)
     {
-        if (E.win[i]->buf->filename == NULL) continue;
-        if (strcmp(E.win[i]->buf->filename, filename) == 0)
+        if (E.buf[i]->filename == NULL) continue;
+        if (strcmp(E.buf[i]->filename, filename) == 0)
         {
-            return E.win[i]->buf;
+            return E.buf[i];
         }
     }
     return NULL;
 }
 
+static TextBuffer *createBuffer(const char *filename)
+{
+    if (E.num_buf == EDITOR_MAX_BUF) return NULL;
+
+    TextBuffer *buf = malloc(sizeof(TextBuffer));
+    if (buf == NULL)
+    {
+        editorFatalError("Fatal! Memory error during text buffer allocation\n");
+        exit(EXIT_FAILURE);
+    }
+    buf->numrows = 0;
+    buf->rows = NULL;
+    buf->dirty = false;
+    buf->syntax = NULL;
+    buf->filename = strdup(filename);
+
+    E.buf[E.num_buf] = buf;
+
+    E.num_buf++;
+
+    return buf;
+}
+
+static void deleteBuffer(TextBuffer *buf)
+{
+    int found_idx = -1;
+    for (size_t i = 0; i < E.num_buf; i++)
+    {
+        if (E.buf[i] == buf)
+        {
+            found_idx = i;
+            break;
+        }
+    }
+
+    if (found_idx == -1)
+    {
+        exit(EXIT_FAILURE);
+    }
+}
+
 int editorOpen(Window *W, const char *filename)
 {
     TextBuffer *existing = findOpenBuffer(filename);
-    if (existing != NULL)
+    if (existing != NULL && existing == W->buf)
     {
-        W->buf = existing;
         return 0;
     }
 
@@ -66,19 +107,35 @@ int editorOpen(Window *W, const char *filename)
         exit(EXIT_FAILURE);
     }
 
-    TextBuffer *buf = W->buf;
+    if (W->buf != NULL)
+    {
+        deleteBuffer(W->buf);
+    }
 
-    editorSelectSyntaxHighlight(buf, filename);
+    editorCursorReset(W);
+
+    if (existing != NULL)
+    {
+        W->buf = existing;
+        return 0;
+    }
+
+    TextBuffer *buf = createBuffer(filename);
+    if (buf == NULL)
+    {
+        return -1;
+    }
+
+    W->buf = buf;
+
+    editorSelectSyntaxHighlight(W->buf, filename);
 
     FILE *fp = fopen(filename, "r");
     if (!fp)
     {
         if (errno == ENOENT)
         {
-            free(buf->filename);
-            buf->filename = strdup(filename);
-            buf->dirty = false;
-            
+            /* Open a new file */   
             return 0;
         }
         else
@@ -104,11 +161,6 @@ int editorOpen(Window *W, const char *filename)
     free(line);
     fclose(fp);
 
-    free(buf->filename);
-    buf->filename = strdup(filename);
-    
-    buf->dirty = false;
-
     return 0;
 }
 
@@ -119,6 +171,48 @@ void command_handler_open(int fd, int argc, char **argv)
     (void)argc;
     (void)argv;
     //editorOpen(E.active_win, idk);
+}
+
+void editorOpenFromWin(Window *W, int fd)
+{
+    char query[EDITOR_QUERY_LEN + 1] = {0};
+    int qlen = 0;
+
+    while (1)
+    {
+        editorSetStatusMessage("Type the name of the file: %s", query);
+        editorRefreshScreen();
+
+        int c = editorReadKey(fd);
+
+        if (c == DEL_KEY || c == CTRL_H || c == BACKSPACE)
+        {
+            if (qlen != 0)
+                query[--qlen] = '\0';
+        }
+        else if (c == ESC)
+        {
+            editorSetStatusMessage("");
+            return;
+        }
+        else if (c == ENTER)
+        {
+            editorSetStatusMessage("");
+            if (query[0] != '\0')
+            {
+                editorOpen(W, query);
+            }
+            return;
+        }
+        else if (isprint(c))
+        {
+            if (qlen < EDITOR_QUERY_LEN)
+            {
+                query[qlen++] = c;
+                query[qlen] = '\0';
+            }
+        }
+    }
 }
 
 static char *editorRowsToString(TextBuffer *buf, int *buflen)
