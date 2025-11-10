@@ -186,7 +186,8 @@ void fbRender(Framebuffer *fb, AppendBuffer *ab)
     {
         Style *s = &fb->grid[i].style;
 
-        if (first_cell || memcmp(&s->fg, &last_style, sizeof(Style)))
+        if (first_cell || s->bg != last_style.bg || s->fg != last_style.fg || 
+            s->attr != last_style.attr)
         {
             char seq[64];
             int len = 0;

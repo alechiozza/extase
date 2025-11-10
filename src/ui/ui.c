@@ -183,8 +183,7 @@ static void drawTextBuffer(Framebuffer *fb, Window *W)
             {
                 Style style = editorSyntaxToColor(hl[x]);
                 
-                if (E.active_win == W && y == W->cy && 
-                    memcmp(&style.bg, &COLOR_DEFAULT_BG, sizeof(Color)) == 0)
+                if (E.active_win == W && y == W->cy && style.bg == COLOR_DEFAULT_BG)
                 {
                     /* The cursor line is highlighted  only if the background is the default one */
                     fbViewportPutChar(fb, W, x, y, *(c+x),

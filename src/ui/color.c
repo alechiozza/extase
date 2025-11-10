@@ -55,13 +55,13 @@ ColorMode getColorMode(void)
 
 size_t printFgColor(char *buf, size_t len, ColorMode mode, Color color)
 {
-    unsigned int r = color.r;
-    unsigned int g = color.g;
-    unsigned int b = color.b;
+    uint8_t r = COLOR_R(color);
+    uint8_t g = COLOR_G(color);
+    uint8_t b = COLOR_B(color);
 
     if (mode == TRUECOLOR)
     {
-        return snprintf(buf, len, ";38;2;%d;%d;%d", r, g, b);
+        return snprintf(buf, len, ";38;2;%u;%u;%u", r, g, b);
     }
     else if (mode == COLOR_256)
     {
@@ -84,13 +84,13 @@ size_t printFgColor(char *buf, size_t len, ColorMode mode, Color color)
 
 size_t printBgColor(char *buf, size_t len, ColorMode mode, Color color)
 {
-    unsigned int r = color.r;
-    unsigned int g = color.g;
-    unsigned int b = color.b;
+    uint8_t r = COLOR_R(color);
+    uint8_t g = COLOR_G(color);
+    uint8_t b = COLOR_B(color);
 
     if (mode == TRUECOLOR)
     {
-        return snprintf(buf, len, ";48;2;%d;%d;%d", r, g, b);
+        return snprintf(buf, len, ";48;2;%u;%u;%u", r, g, b);
     }
     else if (mode == COLOR_256)
     {

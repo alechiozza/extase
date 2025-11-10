@@ -6,5 +6,6 @@ src/config
 *.o
 *.d
 *.py
+*.log
 
 TODO

@@ -51,47 +51,6 @@ static TextBuffer *findOpenBuffer(const char *filename)
     return NULL;
 }
 
-static TextBuffer *createBuffer(const char *filename)
-{
-    if (E.num_buf == EDITOR_MAX_BUF) return NULL;
-
-    TextBuffer *buf = malloc(sizeof(TextBuffer));
-    if (buf == NULL)
-    {
-        editorFatalError("Fatal! Memory error during text buffer allocation\n");
-        exit(EXIT_FAILURE);
-    }
-    buf->numrows = 0;
-    buf->rows = NULL;
-    buf->dirty = false;
-    buf->syntax = NULL;
-    buf->filename = strdup(filename);
-
-    E.buf[E.num_buf] = buf;
-
-    E.num_buf++;
-
-    return buf;
-}
-
-static void deleteBuffer(TextBuffer *buf)
-{
-    int found_idx = -1;
-    for (size_t i = 0; i < E.num_buf; i++)
-    {
-        if (E.buf[i] == buf)
-        {
-            found_idx = i;
-            break;
-        }
-    }
-
-    if (found_idx == -1)
-    {
-        exit(EXIT_FAILURE);
-    }
-}
-
 int editorOpen(Window *W, const char *filename)
 {
     TextBuffer *existing = findOpenBuffer(filename);
@@ -108,9 +67,7 @@ int editorOpen(Window *W, const char *filename)
     }
 
     if (W->buf != NULL)
-    {
-        deleteBuffer(W->buf);
-    }
+        deleteWindowBuf(W);
 
     editorCursorReset(W);
 
@@ -123,7 +80,7 @@ int editorOpen(Window *W, const char *filename)
     TextBuffer *buf = createBuffer(filename);
     if (buf == NULL)
     {
-        return -1;
+        exit(EXIT_FAILURE); // TODO: meh
     }
 
     W->buf = buf;

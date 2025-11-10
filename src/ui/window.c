@@ -153,6 +153,24 @@ Window *editorCreateWindow(void)
     return new_win;
 }
 
+void deleteWindowBuf(Window *W)
+{
+    bool found_buf = false;
+    for (size_t i = 0; i < E.num_win; i++)
+    {
+        if (E.win[i] != W && W->buf == E.win[i]->buf)
+        {
+            found_buf = true;
+            break;
+        }
+    }
+
+    if (!found_buf)
+    {
+        deleteBuffer(W->buf);
+    }
+}
+
 static void destroyWindow(Window *W)
 {
     if (W == NULL)
@@ -175,31 +193,7 @@ static void destroyWindow(Window *W)
         exit(EXIT_FAILURE);
     }
 
-    bool found_buf = false;
-    for (size_t i = 0; i < E.num_win; i++)
-    {
-        if (i != (size_t)found_idx && E.win[found_idx]->buf == E.win[i]->buf)
-        {
-            found_buf = true;
-            break;
-        }
-    }
-
-    if (!found_buf)
-    {
-        free(E.buf[found_buf]);
-
-        int remaining_elements = E.num_buf - 1 - found_buf;
-
-        if (remaining_elements > 0)
-        {
-            memmove(&E.buf[found_buf], &E.buf[found_buf + 1], sizeof(TextBuffer *) * remaining_elements);
-        }
-
-        E.num_buf--;
-
-        E.buf[E.num_buf] = NULL;
-    }
+    deleteWindowBuf(W);
 
     free(E.win[found_idx]);
 

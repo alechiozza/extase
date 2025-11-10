@@ -67,4 +67,6 @@ void computeWindowLayout(void);
 void editorSwitchWindow(Direction dir);
 void editorSplitWindow(bool split);
 
+void deleteWindowBuf(Window *W);
+
 #endif /* __EDITOR_WINDOW_H */

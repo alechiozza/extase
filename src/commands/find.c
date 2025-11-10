@@ -286,6 +286,11 @@ void editorFind(Window *W, int fd)
     
             saved_hl_line = match.y;
             saved_hl = malloc(row->rsize);
+            if (!saved_hl)
+            {
+                editorFatalError("Fatal! Memory allocation for highlight failed\n");
+                exit(EXIT_FAILURE);
+            }
             memcpy(saved_hl, row->hl, row->rsize);
             memset(row->hl + match.x, HL_MATCH, strlen(query));
 
