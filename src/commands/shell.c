@@ -33,14 +33,16 @@ static const ShellCommand BUILTIN_COMMANDS[] = {
     {"quit",    command_handler_quit, 0, 0},
     {"find",    command_handler_find, 0, 1},
     {"line",    command_handler_line, 0, 0},
-    {"save",    command_handler_save, 0, 1}
+    {"save",    command_handler_save, 0, 1},
+    {"open",    command_handler_open, 0, 0}
 };
 
 // TODO: alias customizable from the config file
 static const ShellAlias BUILTIN_ALIASES[] = {
     {"q",       "quit"},
     {"f",       "find"},
-    {"s",       "save"}
+    {"s",       "save"},
+    {"o",       "open"}
 };
 
 #define CMD_NUM (sizeof(BUILTIN_COMMANDS)/sizeof(ShellCommand))

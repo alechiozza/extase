@@ -182,3 +182,10 @@ void editorOpenFromWin(Window *W, int fd)
     }
 }
 
+void command_handler_open(int fd, int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    editorOpenFromWin(E.active_win, fd);
+}
+

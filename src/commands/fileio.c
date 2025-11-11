@@ -123,15 +123,6 @@ int editorOpen(Window *W, const char *filename)
     return 0;
 }
 
-// TODO: implement
-void command_handler_open(int fd, int argc, char **argv)
-{
-    (void)fd;
-    (void)argc;
-    (void)argv;
-    //editorOpen(E.active_win, idk);
-}
-
 static char *editorRowsToString(TextBuffer *buf, int *buflen)
 {
     char *strbuf = NULL;
@@ -245,6 +236,8 @@ int editorSaveAs(TextBuffer *buf, int fd)
                 buf->filename = strdup(query);
                 return editorSave(buf);
             }
+            editorSetStatusMessage("");
+            return 0;
         }
         else if (isprint(c))
         {
