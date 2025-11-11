@@ -111,15 +111,18 @@ static void initLayout(void)
 void initEditor(char *filename)
 {
     E.active_win = NULL;
-    E.linenums = true;
     E.num_win = 0;
     E.num_buf = 0;
-    E.relativenums = true;
     E.too_small = false;
     E.rawmode = false;
     E.last_search = NULL;
     E.layout_root = NULL;
     E.color_mode = getColorMode();
+
+    E.linenums = true;
+    E.relativenums = true;
+    E.auto_paren = true;
+    E.auto_indent = true;
 
     updateWindowSize();
     signal(SIGWINCH, handleSigWinCh);
@@ -166,7 +169,31 @@ void editorInsertChar(Window *W, int c)
     buf->dirty = true;
 }
 
-void editorInsertTab(Window *W)
+char editorGetCharAtCursor(Window *W)
+{
+    int filerow = W->viewport.rowoff + W->cy;
+    int filecol = W->viewport.coloff + W->cx;
+
+    Row *row = (filerow >= W->buf->numrows) ? NULL : &W->buf->rows[filerow];
+    if (!row) return '\0';
+
+    return editorRowGetChar(row, filecol);
+}
+
+char editorGetCharBeforeCursor(Window *W)
+{
+    int filerow = W->viewport.rowoff + W->cy;
+    int filecol = W->viewport.coloff + W->cx;
+
+    if (filecol == 0) return '\0';
+
+    Row *row = (filerow >= W->buf->numrows) ? NULL : &W->buf->rows[filerow];
+    if (!row) return '\0';
+
+    return editorRowGetChar(row, filecol-1);
+}
+
+void editorIndentLine(Window *W)
 {
     int column = W->viewport.coloff + W->cx;
     do

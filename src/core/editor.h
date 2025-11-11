@@ -53,6 +53,8 @@ struct editorConfig
     bool relativenums; /* Enable line numbers relative numeration */
     bool rawmode;    /* Is terminal raw mode enabled? */
     bool too_small;  /* The screen is too small to be rendered */
+    bool auto_paren; /* Enable smart parentesis */
+    bool auto_indent;
     char statusmsg[EDITOR_STATUSMSG_LENGTH];
     int mode;
 
@@ -70,8 +72,9 @@ void editorInsertNewline(Window *W);
 void editorDelChar(Window *W);
 void editorDelNextChar(Window *W);
 void editorInsertChar(Window *W, int c);
-void editorInsertTab(Window *W);
+void editorIndentLine(Window *W);
 
-void freeEditor();
+char editorGetCharAtCursor(Window *W);
+char editorGetCharBeforeCursor(Window *W);
 
 #endif /* __EDITOR_H */

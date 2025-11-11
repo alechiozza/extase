@@ -8,6 +8,9 @@ void editorMoveCursorRight(Window *W);
 void editorMoveCursorUp(Window *W);
 void editorMoveCursorDown(Window *W);
 
+void editorMoveCursorLineEnd(Window *W);
+void editorMoveCursorLineStart(Window *W);
+
 void editorMoveCursorPageUp(Window *W);
 void editorMoveCursorPageDown(Window *W);
 

@@ -114,6 +114,8 @@ int editorOpen(Window *W, const char *filename)
         line[linelen] = '\0';
         editorInsertRow(buf, buf->numrows, line, linelen);
     }
+
+    buf->dirty = false;
     
     free(line);
     fclose(fp);

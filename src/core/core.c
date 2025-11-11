@@ -177,7 +177,7 @@ void editorRowInsertChar(TextBuffer *buf, int row_idx, int at, int c)
 char editorRowGetChar(Row *row, int at)
 {
     if (row->size <= at)
-        return 0;
+        return '\0';
     
     return *(row->chars + at);
 }

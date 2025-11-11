@@ -191,6 +191,22 @@ void editorScrollDown(Window *W)
     fixCursorX(W);
 }
 
+void editorMoveCursorLineEnd(Window *W)
+{
+    int filerow = W->viewport.rowoff + W->cy;
+
+    TextBuffer *buf = W->buf;
+    Row *row = (filerow >= buf->numrows) ? NULL : &buf->rows[filerow];
+
+    if (row == NULL) return;    
+
+    W->viewport.coloff = row->size - (W->viewport.cols-1);
+    if (W->viewport.coloff < 0) W->viewport.coloff = 0;
+    W->cx = row->size - W->viewport.coloff;
+
+    W->expected_cx = W->cx;
+}
+
 void editorCursorReset(Window *W)
 {
     W->cx = 0;
