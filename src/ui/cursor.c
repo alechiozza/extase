@@ -3,6 +3,9 @@
 #include "editor.h"
 #include "window.h"
 #include "core.h"
+#include "utils.h"
+
+#include <ctype.h>
 
 #define CURSOR_HORIZONTAL_GAP 5 /* TODO: implement*/
 
@@ -171,9 +174,7 @@ void editorCenterCursor(Window *W)
 
 void editorScrollUp(Window *W)
 {
-    int filerow = W->viewport.rowoff + W->cy;
-
-    if (filerow == 0) return;
+    if (W->viewport.rowoff == 0) return;
 
     W->viewport.rowoff--;
 
@@ -182,13 +183,18 @@ void editorScrollUp(Window *W)
 
 void editorScrollDown(Window *W)
 {
-    int filerow = W->viewport.rowoff + W->cy;
-
-    if (filerow >= W->buf->numrows) return;
+    if (W->viewport.rowoff + W->viewport.rows >= W->buf->numrows) return;
 
     W->viewport.rowoff++;
 
     fixCursorX(W);
+}
+
+void editorMoveCursorLineStart(Window *W)
+{
+    W->cx = 0;
+    W->viewport.coloff = 0;
+    W->expected_cx = 0;
 }
 
 void editorMoveCursorLineEnd(Window *W)
@@ -205,6 +211,61 @@ void editorMoveCursorLineEnd(Window *W)
     W->cx = row->size - W->viewport.coloff;
 
     W->expected_cx = W->cx;
+}
+
+void editorMoveCursorNextWord(Window *W)
+{
+    int c = editorGetCharAtCursor(W);
+    if (c == '\0') return;
+
+    while (isspace(c))
+    {
+        editorMoveCursorRight(W);
+        c = editorGetCharAtCursor(W);
+    }
+
+    if (is_separator(c))
+    {
+        do
+        {
+            editorMoveCursorRight(W);
+        } while (editorGetCharAtCursor(W) == c);
+    }
+    else
+    {
+        do
+        {
+            editorMoveCursorRight(W);
+        } while (!is_separator(editorGetCharAtCursor(W)));
+    }
+}
+
+void editorMoveCursorPreviousWord(Window *W)
+{
+    int c = editorGetCharBeforeCursor(W);
+
+    while (isspace(c))
+    {
+        editorMoveCursorLeft(W);
+        c = editorGetCharBeforeCursor(W);
+    }
+
+    if (c == '\0') return;
+
+    if (is_separator(c))
+    {
+        do
+        {
+            editorMoveCursorLeft(W);
+        } while (editorGetCharBeforeCursor(W) == c);
+    }
+    else
+    {
+        do
+        {
+            editorMoveCursorLeft(W);
+        } while (!is_separator(editorGetCharBeforeCursor(W)));
+    }
 }
 
 void editorCursorReset(Window *W)

@@ -24,6 +24,29 @@ static char *PARENTESIS[] = {
 
 #define NUM_PAREN (sizeof(PARENTESIS)/sizeof(PARENTESIS[0]))
 
+static void indentParentests(void)
+{
+    char current = editorGetCharAtCursor(E.active_win);
+    char previous = editorGetCharBeforeCursor(E.active_win);
+
+    editorInsertNewline(E.active_win);
+
+    for (size_t i = 0; i < NUM_PAREN; i++)
+    {
+        if (previous == PARENTESIS[i][0])
+        {
+            editorIndentLine(E.active_win);
+            if (current == PARENTESIS[i][1])
+            {
+                editorInsertNewline(E.active_win);
+                editorDelChar(E.active_win);
+                editorMoveCursorUp(E.active_win);
+                editorMoveCursorLineEnd(E.active_win);
+            }
+        }
+    }
+}
+
 void editorIMProcessKeypress(int fd)
 {
     int c = editorReadKey(fd);
@@ -32,38 +55,25 @@ void editorIMProcessKeypress(int fd)
     case ENTER:
     case CTRL_J:
         if (E.auto_indent)
-        {
-            char current = editorGetCharAtCursor(E.active_win);
-            char previous = editorGetCharBeforeCursor(E.active_win);
-
-            editorInsertNewline(E.active_win);
-
-            for (size_t i = 0; i < NUM_PAREN; i++)
-            {
-                if (previous == PARENTESIS[i][0])
-                {
-                    editorIndentLine(E.active_win);
-                    if (current == PARENTESIS[i][1])
-                    {
-                        editorInsertNewline(E.active_win);
-                        editorDelChar(E.active_win);
-                        editorMoveCursorUp(E.active_win);
-                        editorMoveCursorLineEnd(E.active_win);
-                    }
-                }
-            }
-        }
+            indentParentests();
         else
-        {
-
-        }
+            editorInsertNewline(E.active_win);
         break;
     case BACKSPACE:
     case CTRL_H:
         editorDelChar(E.active_win);
         break;
-    case CTRL_K:
+    case CTRL_ARROW_UP:
+        editorScrollUp(E.active_win);
+        break;
+    case CTRL_ARROW_DOWN:
         editorScrollDown(E.active_win);
+        break;
+    case CTRL_ARROW_RIGHT:
+        editorMoveCursorNextWord(E.active_win);
+        break;
+    case CTRL_ARROW_LEFT:
+        editorMoveCursorPreviousWord(E.active_win);
         break;
     case DEL_KEY:
         editorDelNextChar(E.active_win);

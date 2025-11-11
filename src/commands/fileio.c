@@ -132,48 +132,6 @@ void command_handler_open(int fd, int argc, char **argv)
     //editorOpen(E.active_win, idk);
 }
 
-void editorOpenFromWin(Window *W, int fd)
-{
-    char query[EDITOR_QUERY_LEN + 1] = {0};
-    int qlen = 0;
-
-    while (1)
-    {
-        editorSetStatusMessage("Type the name of the file: %s", query);
-        editorRefreshScreen();
-
-        int c = editorReadKey(fd);
-
-        if (c == DEL_KEY || c == CTRL_H || c == BACKSPACE)
-        {
-            if (qlen != 0)
-                query[--qlen] = '\0';
-        }
-        else if (c == ESC)
-        {
-            editorSetStatusMessage("");
-            return;
-        }
-        else if (c == ENTER)
-        {
-            editorSetStatusMessage("");
-            if (query[0] != '\0')
-            {
-                editorOpen(W, query);
-            }
-            return;
-        }
-        else if (isprint(c))
-        {
-            if (qlen < EDITOR_QUERY_LEN)
-            {
-                query[qlen++] = c;
-                query[qlen] = '\0';
-            }
-        }
-    }
-}
-
 static char *editorRowsToString(TextBuffer *buf, int *buflen)
 {
     char *strbuf = NULL;

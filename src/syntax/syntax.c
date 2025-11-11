@@ -4,6 +4,7 @@
 #include "editor.h"
 #include "core.h"
 #include "color.h"
+#include "utils.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -23,11 +24,6 @@ Syntax HLDB[] = {
      test_keywords,
      "//", "/*", "*/",
      HL_HIGHLIGHT_STRINGS | HL_HIGHLIGHT_NUMBERS}};
-
-static bool is_separator(int c)
-{
-    return c == '\0' || isspace(c) || strchr(",.()+-/*=~%[];", c) != NULL;
-}
 
 /* Return true if the specified row last char is part of a multi line comment
  * that starts at this row or at one before, and does not end at the end

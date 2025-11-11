@@ -127,62 +127,61 @@ int enableRawMode(int fd)
 
 static int parseEsc(int fd)
 {
-    char seq[3];
+    char buf[10];
+    size_t i = 0;
 
-    if (read(fd, seq, 1) == 0)
-        return ESC;
-    if (read(fd, seq + 1, 1) == 0)
-        return ESC;
+    if (read(fd, buf, 1) == 0) return ESC;
+    i++;
 
-    if (seq[0] == '[')
+    if (buf[0] == '[')
     {
-        if (seq[1] >= '0' && seq[1] <= '9')
+        while (i < sizeof(buf) - 1)
         {
-            /* Extended escape, read additional byte. */
-            if (read(fd, seq + 2, 1) == 0)
-                return ESC;
-            if (seq[2] == '~')
+            if (read(fd, &buf[i], 1) == 0) return ESC;
+
+            if ((buf[i] >= 'A' && buf[i] <= 'Z') ||
+                (buf[i] >= 'a' && buf[i] <= 'z') ||
+                (buf[i] == '~'))
             {
-                switch (seq[1])
-                {
-                case '3':
-                    return DEL_KEY;
-                case '5':
-                    return PAGE_UP;
-                case '6':
-                    return PAGE_DOWN;
-                }
+                break;
             }
-        }
-        else
-        {
-            switch (seq[1])
-            {
-            case 'A':
-                return ARROW_UP;
-            case 'B':
-                return ARROW_DOWN;
-            case 'C':
-                return ARROW_RIGHT;
-            case 'D':
-                return ARROW_LEFT;
-            case 'H':
-                return HOME_KEY;
-            case 'F':
-                return END_KEY;
-            }
+            i++;
         }
     }
-    else if (seq[0] == 'O')
+    else if (buf[0] == 'O')
     {
-        switch (seq[1])
-        {
-        case 'H':
-            return HOME_KEY;
-        case 'F':
-            return END_KEY;
-        }
+        /* * It's an "O" sequence (e.g., "OH", "OF").
+         * These are usually just one more character.
+         */
+        if (read(fd, &buf[i], 1) == 0) return ESC;
+        i++;
     }
+    else
+    {
+        return KEY_INVALID;
+    }
+
+    buf[i + 1] = '\0';
+
+    if (strcmp(buf, "[A") == 0) return ARROW_UP;
+    if (strcmp(buf, "[B") == 0) return ARROW_DOWN;
+    if (strcmp(buf, "[C") == 0) return ARROW_RIGHT;
+    if (strcmp(buf, "[D") == 0) return ARROW_LEFT;
+
+    if (strcmp(buf, "[H") == 0) return HOME_KEY;
+    if (strcmp(buf, "[F") == 0) return END_KEY;
+
+    if (strcmp(buf, "[3~") == 0) return DEL_KEY;
+    if (strcmp(buf, "[5~") == 0) return PAGE_UP;
+    if (strcmp(buf, "[6~") == 0) return PAGE_DOWN;
+
+    if (strcmp(buf, "[1;5A") == 0) return CTRL_ARROW_UP;
+    if (strcmp(buf, "[1;5B") == 0) return CTRL_ARROW_DOWN;
+    if (strcmp(buf, "[1;5C") == 0) return CTRL_ARROW_RIGHT;
+    if (strcmp(buf, "[1;5D") == 0) return CTRL_ARROW_LEFT;
+
+    if (strcmp(buf, "OH") == 0) return HOME_KEY;
+    if (strcmp(buf, "OF") == 0) return END_KEY;
 
     return KEY_INVALID;
 }

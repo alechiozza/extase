@@ -13,7 +13,7 @@
 void editorSetNormalMode(void)
 {
     E.mode = NORMAL_MODE;
-    editorSetStatusMessage("HELP: Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find | ':' = command shell");
+    editorSetStatusMessage(" -- NORMAL --");
 }
 
 static void processWindowMode(int fd)
@@ -57,13 +57,17 @@ void editorNMProcessKeypress(int fd)
     int c = editorReadKey(fd);
     switch (c)
     {
-    case CTRL_C:
-    case CTRL_D:
-        /* We ignore, it can't be so simple to lose the changes
-         * to the edited file. */
+    case CTRL_ARROW_UP:
+        editorScrollUp(E.active_win);
         break;
-    case CTRL_K:
-        editorScrollDown(E.active_win);    
+    case CTRL_ARROW_DOWN:
+        editorScrollDown(E.active_win);
+        break;
+    case CTRL_ARROW_RIGHT:
+        editorMoveCursorNextWord(E.active_win);
+        break;
+    case CTRL_ARROW_LEFT:
+        editorMoveCursorPreviousWord(E.active_win);
         break;
     case CTRL_Q:
         editorQuit(E.active_win->buf, fd);
@@ -117,6 +121,12 @@ void editorNMProcessKeypress(int fd)
     case 'o':
         editorSetInsertMode();
         editorInsertNewline(E.active_win);
+        break;
+    case '0':
+        editorMoveCursorLineStart(E.active_win);
+        break;
+    case '$':
+        editorMoveCursorLineEnd(E.active_win);
         break;
     case ':':
         editorShell(STDIN_FILENO);

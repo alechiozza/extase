@@ -31,3 +31,8 @@ ssize_t writen(int fd, const void *buf, size_t n)
 
     return (ssize_t)n; 
 }
+
+bool is_separator(int c)
+{
+    return !(isalnum(c) || c == '_' || c == '#');
+}
