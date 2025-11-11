@@ -66,6 +66,7 @@ void editorCloseWindow(void);
 void computeWindowLayout(void);
 void editorSwitchWindow(Direction dir);
 void editorSplitWindow(bool split);
+void editorResizeWindow(Window *W, float amount, bool directed);
 
 void deleteWindowBuf(Window *W);
 

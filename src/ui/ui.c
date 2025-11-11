@@ -34,21 +34,23 @@ static void drawInfoBar(Framebuffer *fb, Window *W)
             "%d/%d ", W->viewport.rowoff + W->cy + 1, W->buf->numrows);
     if (len > W->width)
         len = W->width;
+
+    Color bg = (E.active_win == W) ? COLOR_UI_BLACK : COLOR_UI_DARK_BLACK;
     
-    fbWindowDrawChars(fb, W, 0, W->height-1, status, len, (Style){COLOR_WHITE, COLOR_UI_BLACK,0});
+    fbWindowDrawChars(fb, W, 0, W->height-1, status, len, (Style){COLOR_WHITE, bg,0});
 
     while (len < W->width)
     {
         if (W->width - len == rlen)
         {
             fbWindowDrawChars(fb, W, len, W->height-1, rstatus, rlen, 
-                (Style){COLOR_WHITE, COLOR_UI_BLACK,0});
+                (Style){COLOR_WHITE, bg,0});
             break;
         }
         else
         {
             fbWindowPutChar(fb, W, len, W->height-1, ' ',
-                (Style){COLOR_WHITE, COLOR_UI_BLACK,0});
+                (Style){COLOR_WHITE, bg,0});
         }
         len++;
     }

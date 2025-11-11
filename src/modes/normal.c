@@ -22,7 +22,17 @@ static void processWindowMode(int fd)
     switch (c)
     {
         case '+':
-            /* TODO: change window height */
+        case '=': /* us keyboard sucks */
+            editorResizeWindow(E.active_win, 0.1f, false);
+            break;
+        case '-':
+            editorResizeWindow(E.active_win, -0.1f, false);
+            break;
+        case '>':
+            editorResizeWindow(E.active_win, 0.1f, true);
+            break;
+        case '<':
+            editorResizeWindow(E.active_win, -0.1f, true);
             break;
         case ARROW_LEFT:
         case 'h':
@@ -43,10 +53,10 @@ static void processWindowMode(int fd)
         case 'q':
             editorQuit(E.active_win->buf, fd);
             break;
-        case '|':
+        case 'v':
             editorSplitWindow(SPLIT_VERTICAL);
             break;
-        case '-':
+        case 's':
             editorSplitWindow(SPLIT_HORIZONTAL);
             break;
     }

@@ -408,3 +408,24 @@ void editorSplitWindow(bool split) /* TODO: check if there's enough space for th
 
     computeWindowLayout();
 }
+
+#define MIN_RATIO 0.2
+#define MAX_RATIO 0.8
+
+void editorResizeWindow(Window *W, float amount, bool direct)
+{
+    if (W->node->parent == NULL) return;
+
+    LayoutNode *parent = W->node->parent;
+    if (parent->type != LAYOUT_SPLIT_HORIZONTAL && 
+        parent->type != LAYOUT_SPLIT_VERTICAL)
+        return;
+
+    if (!direct && W->node == parent->child2) amount *= -1;
+    parent->ratio += amount;
+
+    if (parent->ratio < MIN_RATIO) parent->ratio = MIN_RATIO;
+    else if (parent->ratio > MAX_RATIO) parent->ratio = MAX_RATIO;
+
+    computeWindowLayout();
+}
