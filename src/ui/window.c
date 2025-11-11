@@ -3,6 +3,7 @@
 #include "editor.h"
 #include "event.h"
 #include "commands.h"
+#include "ui.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -26,7 +27,7 @@ static void computeNodeLayout(LayoutNode *node)
         W->width = node->width;
         W->height = node->height;
 
-        int left_padding = (E.linenums ? LINENUMBER_SIZE : 0);
+        int left_padding = (E.linenums ? getLineNumberWidth(W) : 0);
 
         W->viewport.top = 0;
         W->viewport.bottom = INFOBAR_SIZE;
@@ -427,5 +428,5 @@ void editorResizeWindow(Window *W, float amount, bool direct)
     if (parent->ratio < MIN_RATIO) parent->ratio = MIN_RATIO;
     else if (parent->ratio > MAX_RATIO) parent->ratio = MAX_RATIO;
 
-    computeWindowLayout();
+    computeNodeLayout(parent);
 }

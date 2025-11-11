@@ -7,7 +7,7 @@ BUILD_DIR_RELEASE = $(BUILD_ROOT)/release
 BUILD_DIR_DEBUG = $(BUILD_ROOT)/debug
 
 CC = gcc
-LDFLAGS =
+LDFLAGS = -lm
 
 INCLUDE_DIRS = $(shell find $(SRC_DIR) -type d)
 IFLAGS = $(addprefix -I,$(INCLUDE_DIRS))

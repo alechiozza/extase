@@ -14,6 +14,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 static void drawTopBar(Framebuffer *fb)
 {
@@ -76,7 +77,7 @@ static void drawScrollBar(Framebuffer *fb, Window *W)
 
     for (int i = y; i < y+h; i++)
     {
-        fbWindowPutChar(fb, W, W->width-1, i, ' ', STYLE_INVERSE);
+        fbWindowPutChar(fb, W, W->width-1, i, ' ', (Style){COLOR_DEFAULT_FG, COLOR_BRIGHT_BLACK, 0});
     }
 }
 
@@ -93,36 +94,53 @@ static void drawStatusBar(Framebuffer *fb)
     fbEraseLineFrom(fb, E.screenrows-1, msglen, COLOR_BLACK);
 }
 
-static void drawLineNumber(Framebuffer *fb, Window *W, int filerow, int n)
+int getLineNumberWidth(Window *W)
+{
+    if (W->buf->numrows == 0) return MIN_LNUM_WIDTH;
+    
+    int width = (int)log10(W->buf->numrows) + 1 + 1; // +1 for final space
+
+    return (width > MIN_LNUM_WIDTH) ? width : MIN_LNUM_WIDTH;
+}
+
+static void drawLineNumber(Framebuffer *fb, Window *W, int y, int width)
 {
     char buf[24];
-    int rnum = filerow+1 % 1000;
+    int blen;
+    int filerow = W->viewport.rowoff + y;
     int current_row = W->viewport.rowoff + W->cy;
 
-    int blen;
+    if (filerow >= W->buf->numrows)
+    {
+        for (int i = 0; i < width; i++) 
+            fbWindowPutChar(fb, W, i, y, ' ', (Style){COLOR_BRIGHT_BLACK, COLOR_LNE_HIGHLIGHT,0});
+        return;
+    }
+
     if (E.relativenums)
     {
         if (filerow == current_row)
-            blen = snprintf(buf, sizeof(buf), "%3d  ", rnum);
+            blen = snprintf(buf, sizeof(buf), "%*d ", width-1, filerow+1);
         else
-            blen = snprintf(buf, sizeof(buf), " %3d ", abs(current_row-filerow));
+            blen = snprintf(buf, sizeof(buf), "%*d ", width-1, abs(current_row-filerow));
     }
     else
     {
-        blen = snprintf(buf, sizeof(buf), " %3d ", rnum);
+        blen = snprintf(buf, sizeof(buf), "%*d ", width-1, filerow+1);
     }
 
-    fbWindowDrawChars(fb, W, 0, n, buf, blen, (Style){COLOR_BRIGHT_BLACK, COLOR_DEFAULT_BG,0});
+    if (filerow == current_row)
+        fbWindowDrawChars(fb, W, 0, y, buf, blen, (Style){COLOR_WHITE, COLOR_UI_DARK_BLACK,0});
+    else
+        fbWindowDrawChars(fb, W, 0, y, buf, blen, (Style){COLOR_BRIGHT_BLACK, COLOR_LNE_HIGHLIGHT,0});
 }
 
 static void drawWelcomeScreen(Framebuffer *fb, Window *W)
 {
     for (int y = 0; y < W->viewport.rows; y++)
     {
-        int filerow = W->viewport.rowoff + y;
-
         if (E.linenums)
-            drawLineNumber(fb, W, filerow, y);
+            drawLineNumber(fb, W, y, MIN_LNUM_WIDTH);
 
         if (y == W->viewport.rows / 3)
         {
@@ -136,7 +154,8 @@ static void drawWelcomeScreen(Framebuffer *fb, Window *W)
                 fbViewportPutChar(fb, W, 0, y, '~', STYLE_NORMAL);
             }
 
-            // TODO: maybe write a fbEraleLineTo(...)
+            for (int i = 1; i < padding; i++)
+                fbViewportPutChar(fb, W, i, y, ' ', STYLE_NORMAL);
             
             fbViewportDrawChars(fb, W, padding, y, welcome, welcomelen, STYLE_NORMAL);
 
@@ -152,12 +171,15 @@ static void drawWelcomeScreen(Framebuffer *fb, Window *W)
 
 static void drawTextBuffer(Framebuffer *fb, Window *W)
 {
+    int lnum_width = getLineNumberWidth(W);
+    W->viewport.left = (E.linenums ? lnum_width : 0); // TODO: hardcoded
+
     for (int y = 0; y < W->viewport.rows; y++)
     {
         int filerow = W->viewport.rowoff + y;
 
         if (E.linenums)
-            drawLineNumber(fb, W, filerow, y);
+            drawLineNumber(fb, W, y, lnum_width);
 
         if (filerow >= W->buf->numrows)
         {

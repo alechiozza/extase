@@ -75,7 +75,7 @@ void editorToggleLinenum(void)
 {
     E.linenums = !E.linenums;
 
-    updateWindowSize();
+    computeWindowLayout();
 }
 
 void command_handler_line(int fd, int argc, char **argv)

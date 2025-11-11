@@ -1,7 +1,11 @@
 #ifndef __EDITOR_UI_H
 #define __EDITOR_UI_H
 
+typedef struct Window Window;
+
 void editorRefreshScreen(void);
 void editorTooSmallScreen(void);
+
+int getLineNumberWidth(Window *W);
 
 #endif /* __EDITOR_REFRESH_H */
