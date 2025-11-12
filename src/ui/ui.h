@@ -8,4 +8,4 @@ void editorTooSmallScreen(void);
 
 int getLineNumberWidth(Window *W);
 
-#endif /* __EDITOR_REFRESH_H */
+#endif /* __EDITOR_UI_H */

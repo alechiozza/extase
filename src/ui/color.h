@@ -25,6 +25,7 @@ typedef uint32_t Color;
 
 enum Attributes
 {
+    ATTR_NONE           = 0,
     ATTR_BOLD           = 1 << 0,
     ATTR_DIM            = 1 << 1,
     ATTR_ITALIC         = 1 << 2,

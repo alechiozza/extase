@@ -11,19 +11,57 @@
 #include <ctype.h>
 
 char *test_extensions[] = {".c", ".h", NULL};
-char *test_keywords[] = {
+char *keywords1[] = {
     "auto", "break", "case", "continue", "default", "do", "else", "enum",
     "extern", "for", "goto", "if", "register", "return", "sizeof", "static",
-    "struct", "switch", "typedef", "union", "volatile", "while", "NULL",
+    "struct", "switch", "typedef", "union", "volatile", "while", "NULL", NULL
+};
+char *keywords2[] = {
+    "int", "long", "double", "float", "char", "unsigned", "signed",
+    "void", "short", "auto", "const", "bool", NULL
+};
+char *keywords3[] = {
+    "#if", "#elif", "#else", "#endif", "#ifdef", "#ifndef", "#elifdef",
+    "#elifndef", "#define", "#undef", "#include", "#embed", "#line"
+    "#error", "#warning", "#pragma", NULL
+};
+SyntaxGroup test_group[] = {
+{
+    keywords1,
+    HL_KEYWORD1
+},
+{
+    keywords2,
+    HL_KEYWORD2
+},
+{
+    keywords3,
+    HL_KEYWORD3
+}
+};
 
-    "int|", "long|", "double|", "float|", "char|", "unsigned|", "signed|",
-    "void|", "short|", "auto|", "const|", "bool|", NULL};
+#define TEST_GROUP_SIZE (sizeof(test_group)/sizeof(SyntaxGroup))
 
 Syntax HLDB[] = {
-    {test_extensions,
-     test_keywords,
-     "//", "/*", "*/",
-     HL_HIGHLIGHT_STRINGS | HL_HIGHLIGHT_NUMBERS}};
+{
+    test_extensions,
+    test_group,
+    "//", 
+    "/*", "*/",
+    HL_HIGHLIGHT_STRINGS | HL_HIGHLIGHT_NUMBERS
+}
+};
+
+typedef struct HighlightState
+{
+    Row *row;
+    Syntax *syntax;
+    const char *r_current;
+    unsigned char *hl_current;
+    int in_string;
+    int in_comment;
+    bool prev_sep;
+} HighlightState;
 
 /* Return true if the specified row last char is part of a multi line comment
  * that starts at this row or at one before, and does not end at the end
@@ -37,22 +75,11 @@ static int editorRowHasOpenComment(Row *row)
     return 0;
 }
 
-typedef struct HighlightState
-{
-    Row *row;
-    Syntax *syntax;
-    const char *r_current;
-    unsigned char *hl_current;
-    int in_string;
-    int in_comment;
-    bool prev_sep;
-} HighlightState;
-
 static bool Highlight_SingleLineComment(HighlightState *s)
 {
-    char *scs = s->syntax->singleline_comment_start;
+    char *start = s->syntax->singleline_comment_start;
 
-    if (s->prev_sep && *s->r_current == scs[0] && *(s->r_current + 1) == scs[1])
+    if (s->prev_sep && *s->r_current == start[0] && *(s->r_current + 1) == start[1])
     {
         memset(s->hl_current, HL_COMMENT, s->row->rsize - (s->hl_current-s->row->hl));
         return true;
@@ -62,13 +89,13 @@ static bool Highlight_SingleLineComment(HighlightState *s)
 
 static bool Highlight_MultiLineComment(HighlightState *s)
 {
-    char *mcs = s->syntax->multiline_comment_start;
-    char *mce = s->syntax->multiline_comment_end;
+    char *start = s->syntax->multiline_comment_start;
+    char *end = s->syntax->multiline_comment_end;
 
     if (s->in_comment)
     {
         *s->hl_current = HL_MLCOMMENT;
-        if (*s->r_current == mce[0] && *(s->r_current + 1) == mce[1])
+        if (*s->r_current == end[0] && *(s->r_current + 1) == end[1])
         {
             *(s->hl_current + 1) = HL_MLCOMMENT;
             s->r_current += 2;
@@ -84,7 +111,7 @@ static bool Highlight_MultiLineComment(HighlightState *s)
         }
         return true;
     }
-    else if (*s->r_current == mcs[0] && *(s->r_current + 1) == mcs[1])
+    else if (*s->r_current == start[0] && *(s->r_current + 1) == start[1])
     {
         *(s->hl_current) = HL_MLCOMMENT;
         *(s->hl_current + 1) = HL_MLCOMMENT;
@@ -164,21 +191,22 @@ static bool Highlight_Keywords(HighlightState *s)
     if (!s->prev_sep)
         return false;
 
-    char **keywords = s->syntax->keywords;
-    for (int j = 0; keywords[j]; j++)
+    SyntaxGroup *groups = s->syntax->groups;
+    for (size_t i = 0; i < TEST_GROUP_SIZE; i++)
     {
-        int klen = strlen(keywords[j]);
-        bool is_type2_keyword = (keywords[j][klen - 1] == '|');
-        if (is_type2_keyword)
-            klen--;
-
-        if (!memcmp(s->r_current, keywords[j], klen) && is_separator(*(s->r_current + klen)))
+        char **keywords = groups[i].keywords;
+        for (int j = 0; keywords[j]; j++)
         {
-            memset(s->hl_current, is_type2_keyword ? HL_KEYWORD2 : HL_KEYWORD1, klen);
-            s->r_current += klen;
-            s->hl_current += klen;
-            s->prev_sep = 0;
-            return true;
+            int klen = strlen(keywords[j]);
+
+            if (!memcmp(s->r_current, keywords[j], klen) && is_separator(*(s->r_current + klen)))
+            {
+                memset(s->hl_current, groups[i].color, klen);
+                s->r_current += klen;
+                s->hl_current += klen;
+                s->prev_sep = 0;
+                return true;
+            }
         }
     }
     return false;
@@ -239,7 +267,7 @@ Style editorSyntaxToColor(int hl)
     switch (hl)
     {
     case HL_NORMAL:
-        return (Style){COLOR_WHITE, COLOR_BLACK, 0};
+        return STYLE_NORMAL;
     case HL_COMMENT:
     case HL_MLCOMMENT:
         return (Style){COLOR_CYAN, COLOR_BLACK, 0};
@@ -247,14 +275,16 @@ Style editorSyntaxToColor(int hl)
         return (Style){COLOR_YELLOW, COLOR_BLACK, 0};
     case HL_KEYWORD2:
         return (Style){COLOR_GREEN, COLOR_BLACK, 0};
-    case HL_STRING:
+    case HL_KEYWORD3:
         return (Style){COLOR_MAGENTA, COLOR_BLACK, 0};
+    case HL_STRING:
+        return (Style){COLOR_GREEN, COLOR_BLACK, 0};
     case HL_NUMBER:
         return (Style){COLOR_RED, COLOR_BLACK, 0};
     case HL_MATCH:
-        return (Style){COLOR_BLACK, COLOR_WHITE, 0};
+        return (Style){COLOR_BLUE, COLOR_BLACK, ATTR_INVERSE};
     default:
-        return (Style){COLOR_WHITE, COLOR_BLACK, 0};
+        return STYLE_NORMAL;
     }
 }
 
