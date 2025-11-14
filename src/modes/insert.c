@@ -17,9 +17,7 @@ void editorSetInsertMode(void)
 static char *PARENTESIS[] = {
     "()",
     "[]",
-    "{}",
-    "\"\"",
-    "''"
+    "{}"
 };
 
 #define NUM_PAREN (sizeof(PARENTESIS)/sizeof(PARENTESIS[0]))

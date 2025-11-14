@@ -9,6 +9,7 @@
 #include "fb.h"
 #include "popup.h"
 #include "widget.h"
+#include "cursor.h"
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -146,15 +147,8 @@ void editorInsertChar(Window *W, int c)
 
     editorRowInsertChar(buf, filerow, filecol, c);
 
-    if (W->cx == W->viewport.cols - 1)
-    {
-        W->viewport.coloff++;
-    }
-    else
-    {
-        W->cx++;
-    }   
-    W->expected_cx = W->cx;
+    editorMoveCursorRight(W);
+    
     buf->dirty = true;
 }
 
@@ -205,8 +199,6 @@ static void editorIndentNewline(Window *W)
     }
 }
 
-/* Inserting a newline is slightly complex as we have to handle inserting a
- * newline in the middle of a line, splitting the line as needed. */
 void editorInsertNewline(Window *W)
 {
     int filerow = W->viewport.rowoff + W->cy;
@@ -228,18 +220,8 @@ void editorInsertNewline(Window *W)
         editorUpdateRow(buf, filerow);
     }
 
-    /* Move the cursor down */
-    if (W->cy > W->viewport.rows - (W->viewport.scroll_margin + W->viewport.top))
-    {
-        W->viewport.rowoff++;
-    }
-    else
-    {
-        W->cy++;
-    }
-    W->cx = 0;
-    W->expected_cx = 0;
-    W->viewport.coloff = 0;
+    editorMoveCursorLineStart(W);
+    editorMoveCursorDown(W);
 
     editorIndentNewline(W);
 }
@@ -262,6 +244,7 @@ void editorDelChar(Window *W)
         filecol = buf->rows[filerow - 1].size;
         editorRowAppendString(buf, filerow - 1, row->chars, row->size);
         editorDelRow(buf, filerow);
+
         if (W->cy == 0)
             W->viewport.rowoff--;
         else
@@ -273,6 +256,7 @@ void editorDelChar(Window *W)
             W->cx -= shift;
             W->viewport.coloff += shift;
         }
+        W->expected_cx = W->cx;
     }
     else
     {
@@ -283,10 +267,7 @@ void editorDelChar(Window *W)
             {
                 editorRowDelChar(buf, filerow, filecol - 1);
 
-                if (W->cx == 0)
-                    W->viewport.coloff--;
-                else
-                    W->cx--;
+                editorMoveCursorLeft(W);
                 
                 filecol--;
             } while (filecol > 0 && filecol % TAB_SIZE != 0 && editorRowGetChar(row, filecol-1) == ' ');
@@ -295,16 +276,11 @@ void editorDelChar(Window *W)
         {
             editorRowDelChar(buf, filerow, filecol - 1);
 
-            if (W->cx == 0)
-                W->viewport.coloff--;
-            else
-                W->cx--;
+            editorMoveCursorLeft(W);
         }
 
         editorUpdateRow(buf, filerow);
     }
-
-    W->expected_cx = W->cx;
     
     buf->dirty = true;
 }
