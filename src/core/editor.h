@@ -19,21 +19,10 @@
 #include <stdbool.h>
 #include "color.h"
 
+typedef struct TextBuffer TextBuffer;
 typedef struct Window Window;
-typedef struct Row Row;
-typedef struct Syntax Syntax;
-typedef struct LayoutNode LayoutNode;
 typedef struct Framebuffer Framebuffer;
 typedef struct Widget Widget;
-
-typedef struct TextBuffer
-{
-    char *filename;
-    int numrows;
-    Row *rows;
-    Syntax *syntax;
-    bool dirty;
-} TextBuffer;
 
 #define EDITOR_MAX_WIN 10
 #define EDITOR_MAX_BUF 10

@@ -51,7 +51,7 @@ static void processWindowMode(int fd)
             editorSwitchWindow(DIR_RIGHT);
             break;
         case 'q':
-            editorQuit(E.active_win->buf, fd);
+            editorQuit(E.active_win->buf, STDIN_FILENO);
             break;
         case 'v':
             editorSplitWindow(SPLIT_VERTICAL);
@@ -62,10 +62,9 @@ static void processWindowMode(int fd)
     }
 }
 
-void editorNMProcessKeypress(int fd)
+void editorNMProcessKeypress(int key)
 {
-    int c = editorReadKey(fd);
-    switch (c)
+    switch (key)
     {
     case CTRL_ARROW_UP:
         editorScrollUp(E.active_win);
@@ -80,19 +79,19 @@ void editorNMProcessKeypress(int fd)
         editorMoveCursorPreviousWord(E.active_win);
         break;
     case CTRL_Q:
-        editorQuit(E.active_win->buf, fd);
+        editorQuit(E.active_win->buf, STDIN_FILENO);
         break;
     case CTRL_S:
         editorSave(E.active_win->buf);
         break;
     case CTRL_F:
-        editorFind(E.active_win, fd);
+        editorFind(E.active_win, STDIN_FILENO);
         break;
     case CTRL_L:
         editorToggleLinenum();
         break;
     case CTRL_O:
-        editorOpenFromWin(E.active_win, fd);
+        editorOpenFromWin(E.active_win, STDIN_FILENO);
         break;
     case PAGE_UP:
         editorMoveCursorPageUp(E.active_win);
@@ -119,7 +118,7 @@ void editorNMProcessKeypress(int fd)
     case TAB:
         break;
     case CTRL_W:
-        processWindowMode(fd);
+        processWindowMode(STDIN_FILENO);
         break;
     case 'i':
     case 'I':

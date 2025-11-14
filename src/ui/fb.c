@@ -58,6 +58,14 @@ void fbResize(Framebuffer *fb, int rows, int cols)
         editorFatalError("Not enough memory to realloc the framebuffer!\n");
         exit(EXIT_FAILURE);
     }
+
+    for (int i = 0; i < rows * cols; i++) 
+    {
+        fb->grid[i].c = ' ';
+        fb->grid[i].width = 1;
+        fb->grid[i].style.fg = COLOR_MAGENTA; /* magenta just for debugging purposes */
+        fb->grid[i].style.bg = COLOR_MAGENTA;
+    }
 }
 
 void fbFree(Framebuffer *fb)

@@ -4,6 +4,8 @@
 #include "event.h"
 #include "commands.h"
 #include "ui.h"
+#include "textbuffer.h"
+#include "modes.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -177,6 +179,19 @@ Window *editorCreateWindow(void)
     E.num_win++;
 
     return new_win;
+}
+
+void windowProcessKeypress(int key)
+{
+    switch (E.mode)
+    {
+        case NORMAL_MODE:
+            editorNMProcessKeypress(key);
+            break;
+        case INSERT_MODE:
+            editorIMProcessKeypress(key);
+            break;
+    }
 }
 
 void deleteWindowBuf(Window *W)

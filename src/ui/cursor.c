@@ -4,6 +4,7 @@
 #include "window.h"
 #include "core.h"
 #include "utils.h"
+#include "textbuffer.h"
 
 #include <ctype.h>
 

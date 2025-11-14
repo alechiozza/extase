@@ -4,6 +4,7 @@
 #include "editor.h"
 #include "event.h"
 #include "syntax.h"
+#include "textbuffer.h"
 
 #include <stdint.h>
 #include <stdlib.h>

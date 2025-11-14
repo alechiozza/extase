@@ -1,10 +1,10 @@
 #include "syntax.h"
 
 #include "term.h"
-#include "editor.h"
 #include "core.h"
 #include "color.h"
 #include "utils.h"
+#include "textbuffer.h"
 
 #include <stdlib.h>
 #include <string.h>

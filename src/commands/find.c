@@ -8,6 +8,7 @@
 #include "window.h"
 #include "core.h"
 #include "cursor.h"
+#include "textbuffer.h"
 
 #include <ctype.h>
 #include <stdlib.h>

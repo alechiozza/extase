@@ -1,16 +1,14 @@
 #include "commands.h"
 
-#include "core.h"
 #include "editor.h"
-#include "term.h"
 #include "window.h"
 #include "ui.h"
 #include "event.h"
+#include "term.h"
+#include "textbuffer.h"
 
 #include <string.h>
-#include <stdlib.h>
 #include <ctype.h>
-#include <unistd.h>
 
 void editorQuit(TextBuffer *buf, int fd)
 {

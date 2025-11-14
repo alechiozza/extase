@@ -7,5 +7,7 @@ src/config
 *.d
 *.py
 *.log
+*.out
+*.json
 
 TODO

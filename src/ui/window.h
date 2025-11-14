@@ -63,6 +63,9 @@ typedef enum Direction
 
 Window *editorCreateWindow(void);
 void editorCloseWindow(void);
+
+void windowProcessKeypress(int key);
+
 void computeWindowLayout(void);
 void editorSwitchWindow(Direction dir);
 void editorSplitWindow(bool split);

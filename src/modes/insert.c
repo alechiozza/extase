@@ -45,10 +45,9 @@ static void indentParentests(void)
     }
 }
 
-void editorIMProcessKeypress(int fd)
+void editorIMProcessKeypress(int key)
 {
-    int c = editorReadKey(fd);
-    switch (c)
+    switch (key)
     {
     case ENTER:
     case CTRL_J:
@@ -101,15 +100,15 @@ void editorIMProcessKeypress(int fd)
         editorSetNormalMode();
         break;
     default:
-        if (!isprint(c)) break;
+        if (!isprint(key)) break;
 
         if (E.auto_paren)
         {
             for (size_t i = 0; i < NUM_PAREN; i++)
             {
-                if (c == PARENTESIS[i][0])
+                if (key == PARENTESIS[i][0])
                 {
-                    editorInsertChar(E.active_win, c);
+                    editorInsertChar(E.active_win, key);
                     editorInsertChar(E.active_win, PARENTESIS[i][1]);
                     editorMoveCursorLeft(E.active_win);
                     return;
@@ -117,7 +116,7 @@ void editorIMProcessKeypress(int fd)
             }
         }
 
-        editorInsertChar(E.active_win, c);
+        editorInsertChar(E.active_win, key);
         break;
     }
 }

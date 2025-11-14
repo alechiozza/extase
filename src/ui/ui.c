@@ -10,6 +10,7 @@
 #include "color.h"
 #include "utils.h"
 #include "widget.h"
+#include "textbuffer.h"
 
 #include <unistd.h>
 #include <string.h>

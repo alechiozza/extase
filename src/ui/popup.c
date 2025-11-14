@@ -4,6 +4,7 @@
 #include "editor.h"
 #include "fb.h"
 #include "utf8.h"
+#include "term.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -43,9 +44,16 @@ static void popupDraw(Framebuffer *fb, Widget *self)
     fbDrawChars(fb, self->x+1, msg_y, popup->message, msg_len, STYLE_NORMAL);
 }
 
-static void popupHandleInput(Widget *self, int key)
+static int popupHandleInput(Widget *self, int key)
 {
-    
+    switch (key)
+    {
+    case ESC:
+    case 'q':
+        return WIDGET_CLOSE;
+    }
+
+    return WIDGET_CONTINUE;
 }
 
 static void popupDestroy(Widget *self)
@@ -53,8 +61,6 @@ static void popupDestroy(Widget *self)
     PopupWindow *popup = (PopupWindow*)self->data;
     free(popup->message);
     free(popup);
-
-    free(self);
 }
 
 Widget *popupNew(const char *message)

@@ -1,7 +1,6 @@
 #include "ui.h"
 #include "editor.h"
 #include "event.h"
-#include "term.h"
 
 #include <stdlib.h>
 #include <stdio.h>

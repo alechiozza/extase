@@ -9,6 +9,7 @@
 #include "utils.h"
 #include "syntax.h"
 #include "cursor.h"
+#include "textbuffer.h"
 
 #include <stdio.h>
 #include <errno.h>

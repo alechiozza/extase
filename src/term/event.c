@@ -6,11 +6,31 @@
 #include "ui.h"
 #include "window.h"
 #include "fb.h"
+#include "widget.h"
 
 #include <stdio.h>
 #include <unistd.h>
 #include <stdarg.h>
 #include <stdlib.h>
+
+void editorProcessKeypress(int fd)
+{
+    int key = editorReadKey(fd);
+
+    if (E.active_widget != NULL)
+    {
+        int status = E.active_widget->handle_input(E.active_widget, key);
+
+        if (status == WIDGET_CLOSE)
+        {
+            deleteWidget(E.active_widget);
+        }
+
+        return;
+    }
+
+    windowProcessKeypress(key);
+}
 
 void updateWindowSize(void)
 {
@@ -28,9 +48,9 @@ void updateWindowSize(void)
     }
     E.too_small = false;
 
-    computeWindowLayout();
-
     fbResize(E.fb, E.screenrows, E.screencols);
+
+    computeWindowLayout();
 }
 
 void handleSigWinCh(int unused)
