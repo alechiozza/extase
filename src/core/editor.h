@@ -23,6 +23,8 @@ typedef struct Window Window;
 typedef struct Row Row;
 typedef struct Syntax Syntax;
 typedef struct LayoutNode LayoutNode;
+typedef struct Framebuffer Framebuffer;
+typedef struct Widget Widget;
 
 typedef struct TextBuffer
 {
@@ -35,6 +37,7 @@ typedef struct TextBuffer
 
 #define EDITOR_MAX_WIN 10
 #define EDITOR_MAX_BUF 10
+#define EDITOR_MAX_WIDG 10
 
 struct editorConfig
 {
@@ -42,13 +45,20 @@ struct editorConfig
     int screencols;
     ColorMode color_mode;
 
-    LayoutNode *layout_root;
+    Framebuffer *fb;
+
     Window *win[EDITOR_MAX_WIN];
     Window *active_win;
     size_t num_win;
 
     TextBuffer *buf[EDITOR_MAX_BUF];
     size_t num_buf;
+
+    Widget *widgets[EDITOR_MAX_WIDG];
+    Widget *active_widget;
+    size_t num_widget;
+
+    // TODO: Widgets here
 
     bool linenums;
     bool relativenums; /* Enable line numbers relative numeration */

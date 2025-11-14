@@ -9,6 +9,7 @@
 #include "event.h"
 #include "color.h"
 #include "utils.h"
+#include "widget.h"
 
 #include <unistd.h>
 #include <string.h>
@@ -61,7 +62,7 @@ static void drawScrollBar(Framebuffer *fb, Window *W)
 {
     for (int i = 0; i < W->height-1; i++)
     {
-        fbWindowPutChar(fb, W, W->width-1, i, ' ', STYLE_NORMAL);
+        fbWindowPutChar(fb, W, W->width-1, i, ' ', (Style){COLOR_DEFAULT_FG, COLOR_UI_DARK_BLACK, 0});
     }
 
     float hratio = (float)W->viewport.rows/W->buf->numrows;
@@ -279,35 +280,33 @@ static int computeCY(Window *W)
 
 void editorRefreshScreen(void)
 {
-    Framebuffer *fb = fbCreate(E.screenrows, E.screencols);
-    if (fb == NULL)
-    {
-        editorFatalError("Not enough memory to allocate the framebuffer!\n");
-        exit(EXIT_FAILURE);
-    }
-
-    drawTopBar(fb);
+    drawTopBar(E.fb);
 
     // TODO: for every window
 
     for (size_t i = 0; i < E.num_win; i++)
     {
         if (E.win[i]->buf->numrows == 0)
-            drawWelcomeScreen(fb, E.win[i]);
+            drawWelcomeScreen(E.fb, E.win[i]);
         else
-            drawTextBuffer(fb, E.win[i]);
+            drawTextBuffer(E.fb, E.win[i]);
 
-        drawInfoBar(fb, E.win[i]);
-        drawScrollBar(fb, E.win[i]);
+        drawInfoBar(E.fb, E.win[i]);
+        drawScrollBar(E.fb, E.win[i]);
     }
 
-    drawStatusBar(fb);
+    for (size_t i = 0; i < E.num_widget; i++)
+    {
+        E.widgets[i]->draw(E.fb, E.widgets[i]);
+    }
+
+    drawStatusBar(E.fb);
 
     AppendBuffer ab = ABUF_INIT;
 
     abAppendString(&ab, ESC_HIDE_CURSOR);
     {
-        fbRender(fb, &ab);
+        fbRender(E.fb, &ab);
 
         /* Set cursor position*/
         char buf[32];
@@ -325,7 +324,6 @@ void editorRefreshScreen(void)
     }
     
     abFree(&ab);
-    fbFree(fb);
 }
 
 void editorTooSmallScreen(void)

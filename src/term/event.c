@@ -5,6 +5,7 @@
 #include "term.h"
 #include "ui.h"
 #include "window.h"
+#include "fb.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -28,6 +29,8 @@ void updateWindowSize(void)
     E.too_small = false;
 
     computeWindowLayout();
+
+    fbResize(E.fb, E.screenrows, E.screencols);
 }
 
 void handleSigWinCh(int unused)

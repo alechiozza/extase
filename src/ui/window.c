@@ -9,6 +9,31 @@
 #include <string.h>
 #include <limits.h>
 
+static LayoutNode *layout_root;
+
+void initLayout(void)
+{
+    if (E.active_win == NULL || layout_root != NULL) return;
+
+    LayoutNode *rootNode = malloc(sizeof(LayoutNode));
+    if (!rootNode)
+    {
+        editorFatalError("Fatal! Memory error\n");
+        exit(1);
+    }
+
+    rootNode->type = LAYOUT_LEAF;
+    rootNode->parent = NULL;
+    rootNode->child1 = NULL;
+    rootNode->child2 = NULL;
+    rootNode->window = E.active_win;
+
+    layout_root = rootNode;
+    E.active_win->node = layout_root;
+
+    computeWindowLayout();
+}
+
 static void computeNodeLayout(LayoutNode *node)
 {
     if (!node)
@@ -103,15 +128,15 @@ static void computeNodeLayout(LayoutNode *node)
 
 void computeWindowLayout(void)
 {
-    if (!E.layout_root)
+    if (!layout_root)
         return;
 
-    E.layout_root->x = 0;
-    E.layout_root->y = TOPBAR_SIZE;
-    E.layout_root->width = E.screencols;
-    E.layout_root->height = E.screenrows - TOPBAR_SIZE - INFOBAR_SIZE;
+    layout_root->x = 0;
+    layout_root->y = TOPBAR_SIZE;
+    layout_root->width = E.screencols;
+    layout_root->height = E.screenrows - TOPBAR_SIZE - INFOBAR_SIZE;
 
-    computeNodeLayout(E.layout_root);
+    computeNodeLayout(layout_root);
 }
 
 static void windowInit(Window *W)
@@ -236,7 +261,7 @@ void editorCloseWindow(void)
 
     if (grandParent == NULL)
     {
-        E.layout_root = siblingNode;
+        layout_root = siblingNode;
         siblingNode->parent = NULL;
     }
     else
@@ -390,7 +415,7 @@ void editorSplitWindow(bool split) /* TODO: check if there's enough space for th
 
     if (newSplitNode->parent == NULL)
     {
-        E.layout_root = newSplitNode;
+        layout_root = newSplitNode;
     }
     else if (newSplitNode->parent->child1 == original_leaf)
     {

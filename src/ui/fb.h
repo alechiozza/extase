@@ -10,7 +10,8 @@ typedef struct Window Window;
 
 typedef struct Cell
 {
-    char c;
+    uint32_t c;
+    uint8_t width;
     Style style;
 } Cell;
 
@@ -31,9 +32,12 @@ typedef struct AppendBuffer
 #define ABUF_INIT {NULL, 0, 0}
 
 Framebuffer *fbCreate(int rows, int cols);
+void fbResize(Framebuffer *fb, int rows, int cols);
 void fbFree(Framebuffer *fb);
 
 void fbPutChar(Framebuffer *fb, int x, int y, char c, Style style);
+void fbPutCodepoint(Framebuffer *fb, int x, int y, uint32_t c, Style style);
+
 void fbDrawChars(Framebuffer *fb, int x, int y, const char *s, int len, Style style);
 void fbDrawString(Framebuffer *fb, int x, int y, const char *s, Style style);
 void fbEraseLine(Framebuffer *fb, int y, Color color);

@@ -65,6 +65,7 @@ void editorMoveCursorRight(Window *W)
     else if (filecol == row->size)
     {
         W->cx = 0;
+        W->expected_cx = W->cx;
         W->viewport.coloff = 0;
         
         editorMoveCursorDown(W);

@@ -1,35 +1,63 @@
+#define _XOPEN_SOURCE
+
 #include "fb.h"
 
 #include "term.h"
 #include "editor.h"
 #include "window.h"
+#include "event.h"
+#include "utf8.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <wchar.h>
+#include <locale.h>
+#include <stdint.h>
 
 Framebuffer *fbCreate(int rows, int cols)
 {
     Framebuffer *fb = malloc(sizeof(Framebuffer));
+    if (fb == NULL)
+    {
+        editorFatalError("Not enough memory to allocate the framebuffer!\n");
+        exit(EXIT_FAILURE);
+    }
+
     fb->rows = rows;
     fb->cols = cols;
     fb->grid = calloc(rows * cols, sizeof(Cell));
     if (fb->grid == NULL)
     {
-        // TODO: handle memory error
-        return NULL;
+        editorFatalError("Not enough memory to allocate the framebuffer!\n");
+        exit(EXIT_FAILURE);
     }
 
     for (int i = 0; i < rows * cols; i++) 
     {
         fb->grid[i].c = ' ';
+        fb->grid[i].width = 1;
         fb->grid[i].style.fg = COLOR_MAGENTA; /* magenta just for debugging purposes */
         fb->grid[i].style.bg = COLOR_MAGENTA;
     }
 
     return fb;
+}
+
+void fbResize(Framebuffer *fb, int rows, int cols)
+{
+    if (fb == NULL) return;
+
+    fb->rows = rows;
+    fb->cols = cols;
+    fb->grid = realloc(fb->grid, rows * cols * sizeof(Cell));
+    if (fb->grid == NULL)
+    {
+        editorFatalError("Not enough memory to realloc the framebuffer!\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
 void fbFree(Framebuffer *fb)
@@ -38,12 +66,40 @@ void fbFree(Framebuffer *fb)
     free(fb);
 }
 
-void fbPutChar(Framebuffer *fb, int x, int y, char c, Style style)
+void fbPutCodepoint(Framebuffer *fb, int x, int y, uint32_t c, Style style)
 {
     if (x < 0 || y < 0 || y >= fb->rows || x >= fb->cols) return;
 
+    int width = wcwidth(c);
+    
+    if (width <= 0)
+    {
+        c = '?';
+        width = 1;
+    }
+
+    if (width > 1 && x + width > fb->cols)
+    {
+        return; /* we clip it, we can't draw it */
+    }
+
+    // Place the main character
     fb->grid[y*fb->cols + x].c = c;
     fb->grid[y*fb->cols + x].style = style;
+    fb->grid[y*fb->cols + x].width = width;
+
+    // If it was a wide character, place a "dummy" cell in the next slot
+    if (width == 2)
+    {
+        fb->grid[y*fb->cols + x + 1].c = 0;
+        fb->grid[y*fb->cols + x + 1].style = style;
+        fb->grid[y*fb->cols + x + 1].width = 0;
+    }
+}
+
+void fbPutChar(Framebuffer *fb, int x, int y, char c, Style style)
+{
+    fbPutCodepoint(fb, x, y, (uint32_t)c, style);
 }
 
 void fbDrawChars(Framebuffer *fb, int x, int y, const char *s, int len, Style style)
@@ -174,7 +230,6 @@ void abFree(AppendBuffer *ab)
     free(ab->b);
 }
 
-// TODO: optimize... a lot
 void fbRender(Framebuffer *fb, AppendBuffer *ab)
 {
     abAppendString(ab, ESC_CURSOR_HOME);
@@ -182,9 +237,19 @@ void fbRender(Framebuffer *fb, AppendBuffer *ab)
     Style last_style;
     bool first_cell = true;
 
-    for (int i = 0; i < fb->rows * fb->cols; i++)
+    int i = 0;
+    while (i < fb->rows * fb->cols)
     {
-        Style *s = &fb->grid[i].style;
+        Cell *cell = &fb->grid[i];
+
+        /* Skip dummy cells */
+        if (cell->width == 0)
+        {
+            i++;
+            continue;
+        }
+
+        Style *s = &cell->style;
 
         if (first_cell || s->bg != last_style.bg || s->fg != last_style.fg || 
             s->attr != last_style.attr)
@@ -211,6 +276,10 @@ void fbRender(Framebuffer *fb, AppendBuffer *ab)
             last_style = *s;
         }
 
-        abAppend(ab, &(fb->grid[i].c), 1); /* print the actual character */
+        char utf8_buffer[5]; /* (Max 4 bytes + null) */
+        int bytes_written = codepoint_to_utf8(cell->c, utf8_buffer);
+        abAppend(ab, utf8_buffer, bytes_written);
+
+        i += cell->width;
     }
 }

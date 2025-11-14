@@ -70,4 +70,6 @@ void editorResizeWindow(Window *W, float amount, bool directed);
 
 void deleteWindowBuf(Window *W);
 
+void initLayout(void);
+
 #endif /* __EDITOR_WINDOW_H */

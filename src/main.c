@@ -6,9 +6,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <locale.h>
 
 int main(int argc, char **argv)
 {
+    setlocale(LC_CTYPE, "");
+    
     if (argc != 2)
     {
         fprintf(stderr, "Usage: editor <filename>\n");

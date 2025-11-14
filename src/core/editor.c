@@ -6,6 +6,9 @@
 #include "syntax.h"
 #include "commands.h"
 #include "window.h"
+#include "fb.h"
+#include "popup.h"
+#include "widget.h"
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -85,38 +88,18 @@ static void initWindow(const char *filename)
     editorOpen(E.active_win, filename);
 }
 
-static void initLayout(void)
-{
-    if (E.active_win == NULL) return;
-
-    LayoutNode *rootNode = malloc(sizeof(LayoutNode));
-    if (!rootNode)
-    {
-        editorFatalError("Fatal! Memory error\n");
-        exit(1);
-    }
-
-    rootNode->type = LAYOUT_LEAF;
-    rootNode->parent = NULL;
-    rootNode->child1 = NULL;
-    rootNode->child2 = NULL;
-    rootNode->window = E.active_win;
-
-    E.layout_root = rootNode;
-    E.active_win->node = E.layout_root;
-
-    computeWindowLayout();
-}
-
 void initEditor(char *filename)
 {
     E.active_win = NULL;
     E.num_win = 0;
     E.num_buf = 0;
+
+    E.active_widget = NULL;
+    E.num_widget = 0;
+
     E.too_small = false;
     E.rawmode = false;
     E.last_search = NULL;
-    E.layout_root = NULL;
     E.color_mode = getColorMode();
 
     E.linenums = true;
@@ -139,6 +122,12 @@ void initEditor(char *filename)
 
     initWindow(filename);
     initLayout();
+
+    Widget *widg = popupNew("Hello World!");
+    E.widgets[E.num_widget] = widg;
+    E.num_widget++;
+
+    E.fb = fbCreate(E.screenrows, E.screencols);
 }
 
 void editorInsertChar(Window *W, int c)
