@@ -5,9 +5,10 @@ typedef struct Widget Widget;
 
 typedef struct PopupWindow
 {
+    char *title;
     char *message;
 } PopupWindow;
 
-Widget *popupNew(const char *message);
+Widget *popupNew(const char *title, const char *message);
 
 #endif /* __EDITOR_POPUP_H */

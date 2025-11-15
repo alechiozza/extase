@@ -55,8 +55,10 @@ void initEditor(char *filename)
     editorOpen(E.active_win, filename);
     initLayout();
 
-    Widget *widg = popupNew("Hello World!");
+    Widget *widg = popupNew("Message", "Hello World!");
     createWidget(widg);
+
+    E.active_widget = widg;
 
     E.fb = fbCreate(E.screenrows, E.screencols);
 }

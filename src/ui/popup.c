@@ -11,29 +11,35 @@
 
 static void popupDraw(Framebuffer *fb, Widget *self)
 {
+    PopupWindow * popup = (PopupWindow*)self->data;
+    int title_len = strlen(popup->title);
+
     for (int x = 1; x < self->width-1; x++)
     {
-        fbPutCodepoint(fb, x+self->x, self->y, BOX_HORIZONTAL, STYLE_NORMAL);
-        fbPutCodepoint(fb, x+self->x, self->y+self->height-1, BOX_HORIZONTAL, STYLE_NORMAL);
+        if (x >= 2 && x-2 < title_len)
+            fbPutChar(fb, x+self->x, self->y, popup->title[x-2], STYLE_NORMAL);
+        else
+            fbPutCodepoint(fb, x+self->x, self->y, DOUBLEBOX_HORIZONTAL, STYLE_NORMAL);
+        
+        fbPutCodepoint(fb, x+self->x, self->y+self->height-1, DOUBLEBOX_HORIZONTAL, STYLE_NORMAL);
     }
 
     for (int y = 1; y < self->height-1; y++)
     {
-        fbPutCodepoint(fb, self->x, y+self->y, BOX_VERTICAL, STYLE_NORMAL);
+        fbPutCodepoint(fb, self->x, y+self->y, DOUBLEBOX_VERTICAL, STYLE_NORMAL);
         for (int x = 1; x < self->width-1; x++)
         {
             fbPutChar(fb, x+self->x, y+self->y, ' ', STYLE_NORMAL);
         }
-        fbPutCodepoint(fb, self->x+self->width-1, y+self->y, BOX_VERTICAL, STYLE_NORMAL);
+        fbPutCodepoint(fb, self->x+self->width-1, y+self->y, DOUBLEBOX_VERTICAL, STYLE_NORMAL);
     }
 
     /* Draw corners */
-    fbPutCodepoint(fb, self->x, self->y, BOX_TOPLEFT, STYLE_NORMAL);
-    fbPutCodepoint(fb, self->x+self->width-1, self->y, BOX_TOPRIGHT, STYLE_NORMAL);
-    fbPutCodepoint(fb, self->x, self->y+self->height-1, BOX_BOTTOMLEFT, STYLE_NORMAL);
-    fbPutCodepoint(fb, self->x+self->width-1, self->y+self->height-1, BOX_BOTTOMRIGHT, STYLE_NORMAL);
+    fbPutCodepoint(fb, self->x, self->y, DOUBLEBOX_TOPLEFT, STYLE_NORMAL);
+    fbPutCodepoint(fb, self->x+self->width-1, self->y, DOUBLEBOX_TOPRIGHT, STYLE_NORMAL);
+    fbPutCodepoint(fb, self->x, self->y+self->height-1, DOUBLEBOX_BOTTOMLEFT, STYLE_NORMAL);
+    fbPutCodepoint(fb, self->x+self->width-1, self->y+self->height-1, DOUBLEBOX_BOTTOMRIGHT, STYLE_NORMAL);
     
-    PopupWindow * popup = (PopupWindow*)self->data;
     int msg_y = self->y + self->height/2;
     int msg_len = strlen(popup->message);
     if (msg_len > self->width - 2)
@@ -63,14 +69,15 @@ static void popupDestroy(Widget *self)
     free(popup);
 }
 
-Widget *popupNew(const char *message)
+Widget *popupNew(const char *title, const char *message)
 {
     PopupWindow *popup = malloc(sizeof(PopupWindow));
+    popup->title = strdup(title);
     popup->message = strdup(message);
 
     Widget *widget = malloc(sizeof(Widget));
-    widget->width = 20;
-    widget->height = 7;
+    widget->width = strlen(message) + 4;
+    widget->height = 5;
     widget->x = (E.screencols - widget->width) / 2;
     widget->y = (E.screenrows - widget->height) / 2;
 

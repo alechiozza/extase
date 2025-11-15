@@ -11,8 +11,6 @@ void createWidget(Widget *w)
 
     E.widgets[E.num_widget] = w;
     E.num_widget++;
-
-    E.active_widget = w;
 }
 
 void deleteWidget(Widget *w)
