@@ -21,7 +21,7 @@
 
 typedef struct TextBuffer TextBuffer;
 typedef struct Window Window;
-typedef struct Framebuffer Framebuffer;
+typedef struct FrameBuffer FrameBuffer;
 typedef struct Widget Widget;
 
 #define EDITOR_MAX_WIN 10
@@ -34,7 +34,7 @@ struct editorConfig
     int screencols;
     ColorMode color_mode;
 
-    Framebuffer *fb;
+    FrameBuffer *fb;
 
     Window *win[EDITOR_MAX_WIN];
     Window *active_win;

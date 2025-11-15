@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-static void drawTopBar(Framebuffer *fb)
+static void drawTopBar(FrameBuffer *fb)
 {
     char topbar[80];
     int topbarlen = snprintf(topbar, sizeof(topbar),
@@ -28,7 +28,7 @@ static void drawTopBar(Framebuffer *fb)
     fbEraseLineFrom(fb, 0, topbarlen, COLOR_UI_BLACK);
 }
 
-static void drawInfoBar(Framebuffer *fb, Window *W)
+static void drawInfoBar(FrameBuffer *fb, Window *W)
 {
     char status[80], rstatus[80];
     int len = snprintf(status, sizeof(status), 
@@ -59,7 +59,7 @@ static void drawInfoBar(Framebuffer *fb, Window *W)
     }
 }
 
-static void drawScrollBar(Framebuffer *fb, Window *W)
+static void drawScrollBar(FrameBuffer *fb, Window *W)
 {
     for (int i = 0; i < W->height-1; i++)
     {
@@ -83,7 +83,7 @@ static void drawScrollBar(Framebuffer *fb, Window *W)
     }
 }
 
-static void drawStatusBar(Framebuffer *fb)
+static void drawStatusBar(FrameBuffer *fb)
 {
     int msglen = strlen(E.statusmsg);
     if (msglen)
@@ -105,7 +105,7 @@ int getLineNumberWidth(Window *W)
     return (width > MIN_LNUM_WIDTH) ? width : MIN_LNUM_WIDTH;
 }
 
-static void drawLineNumber(Framebuffer *fb, Window *W, int y, int width)
+static void drawLineNumber(FrameBuffer *fb, Window *W, int y, int width)
 {
     char buf[24];
     int blen;
@@ -137,7 +137,7 @@ static void drawLineNumber(Framebuffer *fb, Window *W, int y, int width)
         fbWindowDrawChars(fb, W, 0, y, buf, blen, (Style){COLOR_BRIGHT_BLACK, COLOR_LNE_HIGHLIGHT,0});
 }
 
-static void drawWelcomeScreen(Framebuffer *fb, Window *W)
+static void drawWelcomeScreen(FrameBuffer *fb, Window *W)
 {
     for (int y = 0; y < W->viewport.rows; y++)
     {
@@ -171,7 +171,7 @@ static void drawWelcomeScreen(Framebuffer *fb, Window *W)
     }
 }
 
-static void drawTextBuffer(Framebuffer *fb, Window *W)
+static void drawTextBuffer(FrameBuffer *fb, Window *W)
 {
     int lnum_width = getLineNumberWidth(W);
     W->viewport.left = (E.linenums ? lnum_width : 0); // TODO: hardcoded
@@ -251,10 +251,19 @@ static void drawTextBuffer(Framebuffer *fb, Window *W)
     // }
 }
 
-static int computeCX(Window *W)
+static int computeCX()
 {
     /* Handle TABs */
     int cx = 1;
+
+    if (E.active_widget != NULL)
+    {
+        cx += E.active_widget->x + E.active_widget->cx;
+        return cx;
+    }
+
+    Window *W = E.active_win;
+
     int filerow = W->viewport.rowoff+W->cy;
     Row *row = (filerow >= W->buf->numrows) ? NULL : &W->buf->rows[filerow];
     if (row)
@@ -273,9 +282,18 @@ static int computeCX(Window *W)
     return cx;
 }
 
-static int computeCY(Window *W)
+static int computeCY()
 {
-    int cy = 1 + W->y + W->viewport.top + W->cy;
+    int cy = 1;
+    
+    if (E.active_widget != NULL)
+    {
+        cy += E.active_widget->y + E.active_widget->cy;
+        return cy;
+    }
+
+    Window *W = E.active_win;
+    cy += W->y + W->viewport.top + W->cy;
     return cy;
 }
 
@@ -298,7 +316,7 @@ void editorRefreshScreen(void)
 
     for (size_t i = 0; i < E.num_widget; i++)
     {
-        E.widgets[i]->draw(E.fb, E.widgets[i]);
+        E.widgets[i]->draw(E.widgets[i], E.fb);
     }
 
     drawStatusBar(E.fb);
@@ -311,8 +329,8 @@ void editorRefreshScreen(void)
 
         /* Set cursor position*/
         char buf[32];
-        int cx = computeCX(E.active_win);
-        int cy = computeCY(E.active_win);
+        int cx = computeCX();
+        int cy = computeCY();
         snprintf(buf, sizeof(buf), "\x1b[%d;%dH", cy, cx);
         abAppendString(&ab, buf);
     }

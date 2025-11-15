@@ -20,7 +20,7 @@ VALGRIND = valgrind
 VALGRIND_LOG = valgrind-report.log
 VALGRIND_FLAGS = --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=$(VALGRIND_LOG)
 
-SRCS = $(wildcard $(SRC_DIR)/*.c) $(wildcard $(SRC_DIR)/**/*.c)
+SRCS = $(shell find $(SRC_DIR) -name '*.c')
 
 OBJS_RELEASE = $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR_RELEASE)/%.o)
 DEPS_RELEASE = $(OBJS_RELEASE:%.o=%.d)

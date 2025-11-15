@@ -7,6 +7,7 @@
 #include "event.h"
 #include "ui.h"
 #include "window.h"
+#include "widget.h"
 
 #include <unistd.h>
 
@@ -91,8 +92,12 @@ void editorNMProcessKeypress(int key)
         editorToggleLinenum();
         break;
     case CTRL_O:
-        editorOpenFromWin(E.active_win, STDIN_FILENO);
+    {
+        Widget *picker = filePickerCreate(E.active_win);
+        createWidget(picker);
+        E.active_widget = picker;
         break;
+    }
     case PAGE_UP:
         editorMoveCursorPageUp(E.active_win);
         break;

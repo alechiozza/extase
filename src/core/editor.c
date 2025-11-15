@@ -7,7 +7,6 @@
 #include "commands.h"
 #include "window.h"
 #include "fb.h"
-#include "popup.h"
 #include "widget.h"
 #include "cursor.h"
 #include "textbuffer.h"
@@ -54,11 +53,6 @@ void initEditor(char *filename)
     editorCreateWindow();
     editorOpen(E.active_win, filename);
     initLayout();
-
-    Widget *widg = popupNew("Message", "Hello World!");
-    createWidget(widg);
-
-    E.active_widget = widg;
 
     E.fb = fbCreate(E.screenrows, E.screencols);
 }

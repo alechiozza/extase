@@ -17,9 +17,9 @@
 #include <locale.h>
 #include <stdint.h>
 
-Framebuffer *fbCreate(int rows, int cols)
+FrameBuffer *fbCreate(int rows, int cols)
 {
-    Framebuffer *fb = malloc(sizeof(Framebuffer));
+    FrameBuffer *fb = malloc(sizeof(FrameBuffer));
     if (fb == NULL)
     {
         editorFatalError("Not enough memory to allocate the framebuffer!\n");
@@ -46,7 +46,7 @@ Framebuffer *fbCreate(int rows, int cols)
     return fb;
 }
 
-void fbResize(Framebuffer *fb, int rows, int cols)
+void fbResize(FrameBuffer *fb, int rows, int cols)
 {
     if (fb == NULL) return;
 
@@ -68,13 +68,13 @@ void fbResize(Framebuffer *fb, int rows, int cols)
     }
 }
 
-void fbFree(Framebuffer *fb)
+void fbFree(FrameBuffer *fb)
 {
     free(fb->grid);
     free(fb);
 }
 
-void fbPutCodepoint(Framebuffer *fb, int x, int y, uint32_t c, Style style)
+void fbPutCodepoint(FrameBuffer *fb, int x, int y, uint32_t c, Style style)
 {
     if (x < 0 || y < 0 || y >= fb->rows || x >= fb->cols) return;
 
@@ -105,36 +105,36 @@ void fbPutCodepoint(Framebuffer *fb, int x, int y, uint32_t c, Style style)
     }
 }
 
-void fbPutChar(Framebuffer *fb, int x, int y, char c, Style style)
+void fbPutChar(FrameBuffer *fb, int x, int y, char c, Style style)
 {
     fbPutCodepoint(fb, x, y, (uint32_t)c, style);
 }
 
-void fbDrawChars(Framebuffer *fb, int x, int y, const char *s, int len, Style style)
+void fbDrawChars(FrameBuffer *fb, int x, int y, const char *s, int len, Style style)
 {
     for (int i = 0; i < len && x + i < fb->cols; i++)
         fbPutChar(fb, x + i, y, s[i], style);
 }
 
-void fbDrawString(Framebuffer *fb, int x, int y, const char *s, Style style)
+void fbDrawString(FrameBuffer *fb, int x, int y, const char *s, Style style)
 {
     for (int i = 0; s[i] && x + i < fb->cols; i++)
         fbPutChar(fb, x + i, y, s[i], style);
 }
 
-void fbEraseLine(Framebuffer *fb, int y, Color color)
+void fbEraseLine(FrameBuffer *fb, int y, Color color)
 {
     for (int i = 0; i < fb->cols; i++)
         fbPutChar(fb, i, y, ' ', (Style){COLOR_DEFAULT_FG, color, 0});
 }
 
-void fbEraseLineFrom(Framebuffer *fb, int y, int x, Color color)
+void fbEraseLineFrom(FrameBuffer *fb, int y, int x, Color color)
 {
     for (int i = x; i < fb->cols; i++)
         fbPutChar(fb, i, y, ' ', (Style){COLOR_DEFAULT_FG, color, 0});
 }
 
-void fbWindowPutChar(Framebuffer *fb, Window *W, int x, int y, char c, Style style)
+void fbWindowPutChar(FrameBuffer *fb, Window *W, int x, int y, char c, Style style)
 {
     if (x < 0 || y < 0 || y >= W->height || x >= W->width) return;
 
@@ -145,31 +145,31 @@ void fbWindowPutChar(Framebuffer *fb, Window *W, int x, int y, char c, Style sty
     fb->grid[y*fb->cols + x].style = style;
 }
 
-void fbWindowDrawChars(Framebuffer *fb, Window *W, int x, int y, const char *s, int len, Style style)
+void fbWindowDrawChars(FrameBuffer *fb, Window *W, int x, int y, const char *s, int len, Style style)
 {
     for (int i = 0; i < len && x + i < fb->cols; i++)
         fbWindowPutChar(fb, W, x + i, y, s[i], style);
 }
 
-void fbWindowDrawString(Framebuffer *fb, Window *W, int x, int y, const char *s, Style style)
+void fbWindowDrawString(FrameBuffer *fb, Window *W, int x, int y, const char *s, Style style)
 {
     for (int i = 0; s[i] && x + i < fb->cols; i++)
         fbWindowPutChar(fb, W, x + i, y, s[i], style);
 }
 
-void fbWindowEraseLine(Framebuffer *fb, Window *W, int y, Color color)
+void fbWindowEraseLine(FrameBuffer *fb, Window *W, int y, Color color)
 {
     for (int i = 0; i < W->width; i++)
         fbWindowPutChar(fb, W, i, y, ' ', (Style){COLOR_DEFAULT_FG, color, 0});
 }
 
-void fbWindowEraseLineFrom(Framebuffer *fb, Window *W, int y, int x, Color color)
+void fbWindowEraseLineFrom(FrameBuffer *fb, Window *W, int y, int x, Color color)
 {
     for (int i = x; i < W->width; i++)
         fbWindowPutChar(fb, W, i, y, ' ', (Style){COLOR_DEFAULT_FG, color, 0});
 }
 
-void fbViewportPutChar(Framebuffer *fb, Window *W, int x, int y, char c, Style style)
+void fbViewportPutChar(FrameBuffer *fb, Window *W, int x, int y, char c, Style style)
 {
     if (x < 0 || y < 0 || y >= W->viewport.rows || x >= W->viewport.cols) return;
 
@@ -180,25 +180,25 @@ void fbViewportPutChar(Framebuffer *fb, Window *W, int x, int y, char c, Style s
     fb->grid[y*fb->cols + x].style = style;
 }
 
-void fbViewportDrawChars(Framebuffer *fb, Window *W, int x, int y, const char *s, int len, Style style)
+void fbViewportDrawChars(FrameBuffer *fb, Window *W, int x, int y, const char *s, int len, Style style)
 {
     for (int i = 0; i < len && x + i < fb->cols; i++)
         fbViewportPutChar(fb, W, x + i, y, s[i], style);
 }
 
-void fbViewportDrawString(Framebuffer *fb, Window *W, int x, int y, const char *s, Style style)
+void fbViewportDrawString(FrameBuffer *fb, Window *W, int x, int y, const char *s, Style style)
 {
     for (int i = 0; s[i] && x + i < fb->cols; i++)
         fbViewportPutChar(fb, W, x + i, y, s[i], style);
 }
 
-void fbViewportEraseLine(Framebuffer *fb, Window *W, int y, Color color)
+void fbViewportEraseLine(FrameBuffer *fb, Window *W, int y, Color color)
 {
     for (int i = 0; i < W->viewport.cols; i++)
         fbViewportPutChar(fb, W, i, y, ' ', (Style){COLOR_DEFAULT_FG, color, 0});
 }
 
-void fbViewportEraseLineFrom(Framebuffer *fb, Window *W, int y, int x, Color color)
+void fbViewportEraseLineFrom(FrameBuffer *fb, Window *W, int y, int x, Color color)
 {
     for (int i = x; i < W->viewport.cols; i++)
         fbViewportPutChar(fb, W, i, y, ' ', (Style){COLOR_DEFAULT_FG, color, 0});
@@ -238,7 +238,7 @@ void abFree(AppendBuffer *ab)
     free(ab->b);
 }
 
-void fbRender(Framebuffer *fb, AppendBuffer *ab)
+void fbRender(FrameBuffer *fb, AppendBuffer *ab)
 {
     abAppendString(ab, ESC_CURSOR_HOME);
 

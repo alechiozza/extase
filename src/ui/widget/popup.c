@@ -1,6 +1,5 @@
-#include "popup.h"
-
 #include "widget.h"
+
 #include "editor.h"
 #include "fb.h"
 #include "utf8.h"
@@ -9,7 +8,13 @@
 #include <string.h>
 #include <stdlib.h>
 
-static void popupDraw(Framebuffer *fb, Widget *self)
+typedef struct PopupWindow
+{
+    char *title;
+    char *message;
+} PopupWindow;
+
+static void popupDraw(Widget *self, FrameBuffer *fb)
 {
     PopupWindow * popup = (PopupWindow*)self->data;
     int title_len = strlen(popup->title);
@@ -52,6 +57,8 @@ static void popupDraw(Framebuffer *fb, Widget *self)
 
 static int popupHandleInput(Widget *self, int key)
 {
+    (void)self;
+    
     switch (key)
     {
     case ESC:
@@ -69,7 +76,7 @@ static void popupDestroy(Widget *self)
     free(popup);
 }
 
-Widget *popupNew(const char *title, const char *message)
+Widget *popupCreate(const char *title, const char *message)
 {
     PopupWindow *popup = malloc(sizeof(PopupWindow));
     popup->title = strdup(title);
@@ -80,6 +87,8 @@ Widget *popupNew(const char *title, const char *message)
     widget->height = 5;
     widget->x = (E.screencols - widget->width) / 2;
     widget->y = (E.screenrows - widget->height) / 2;
+    widget->cx = 1;
+    widget->cy = 1;
 
     widget->draw = &popupDraw;
     widget->handle_input = &popupHandleInput;
