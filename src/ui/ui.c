@@ -115,7 +115,7 @@ static void drawLineNumber(FrameBuffer *fb, Window *W, int y, int width)
     if (filerow >= W->buf->numrows)
     {
         for (int i = 0; i < width; i++) 
-            fbWindowPutChar(fb, W, i, y, ' ', (Style){COLOR_BRIGHT_BLACK, COLOR_LNE_HIGHLIGHT,0});
+            fbWindowPutChar(fb, W, i, y, ' ', (Style){COLOR_BRIGHT_BLACK, COLOR_LINE_HIGHLIGHT,0});
         return;
     }
 
@@ -134,7 +134,7 @@ static void drawLineNumber(FrameBuffer *fb, Window *W, int y, int width)
     if (filerow == current_row)
         fbWindowDrawChars(fb, W, 0, y, buf, blen, (Style){COLOR_WHITE, COLOR_UI_DARK_BLACK,0});
     else
-        fbWindowDrawChars(fb, W, 0, y, buf, blen, (Style){COLOR_BRIGHT_BLACK, COLOR_LNE_HIGHLIGHT,0});
+        fbWindowDrawChars(fb, W, 0, y, buf, blen, (Style){COLOR_BRIGHT_BLACK, COLOR_LINE_HIGHLIGHT,0});
 }
 
 static void drawWelcomeScreen(FrameBuffer *fb, Window *W)
@@ -201,24 +201,20 @@ static void drawTextBuffer(FrameBuffer *fb, Window *W)
         unsigned char *hl = r->hl + W->viewport.coloff;
         for (int x = 0; x < len; x++)
         {
+            Style style = editorSyntaxToColor(hl[x]);
+                
+            if (E.active_win == W && y == W->cy && style.bg == COLOR_DEFAULT_BG)
+            {
+                style.bg = COLOR_LINE_HIGHLIGHT;
+            }
+
             if (hl[x] == HL_NONPRINT)
             {
-                fbViewportPutChar(fb, W, x, y, *(c+x), STYLE_INVERSE);
+                fbViewportPutChar(fb, W, x, y, '?', style);
             }
             else
             {
-                Style style = editorSyntaxToColor(hl[x]);
-                
-                if (E.active_win == W && y == W->cy && style.bg == COLOR_DEFAULT_BG)
-                {
-                    /* The cursor line is highlighted  only if the background is the default one */
-                    fbViewportPutChar(fb, W, x, y, *(c+x),
-                        (Style){style.fg, COLOR_LNE_HIGHLIGHT, style.attr});
-                }
-                else
-                {
-                    fbViewportPutChar(fb, W, x, y, *(c+x), style);
-                }
+                fbViewportPutChar(fb, W, x, y, *(c+x), style);
             }
         }
 
@@ -226,7 +222,7 @@ static void drawTextBuffer(FrameBuffer *fb, Window *W)
 
         if (E.active_win == W && y == W->cy)
         {
-            fbViewportEraseLineFrom(fb, W, y, len, COLOR_LNE_HIGHLIGHT);
+            fbViewportEraseLineFrom(fb, W, y, len, COLOR_LINE_HIGHLIGHT);
         }
         else
         {

@@ -82,7 +82,7 @@ void fbPutCodepoint(FrameBuffer *fb, int x, int y, uint32_t c, Style style)
     
     if (width <= 0)
     {
-        c = '?';
+        c = UNICODE_UNKNOWN;
         width = 1;
     }
 
@@ -91,7 +91,6 @@ void fbPutCodepoint(FrameBuffer *fb, int x, int y, uint32_t c, Style style)
         return; /* we clip it, we can't draw it */
     }
 
-    // Place the main character
     fb->grid[y*fb->cols + x].c = c;
     fb->grid[y*fb->cols + x].style = style;
     fb->grid[y*fb->cols + x].width = width;
@@ -141,8 +140,7 @@ void fbWindowPutChar(FrameBuffer *fb, Window *W, int x, int y, char c, Style sty
     x = W->x + x;
     y = W->y + y;
     
-    fb->grid[y*fb->cols + x].c = c;
-    fb->grid[y*fb->cols + x].style = style;
+    fbPutChar(fb, x, y, c, style);
 }
 
 void fbWindowDrawChars(FrameBuffer *fb, Window *W, int x, int y, const char *s, int len, Style style)
@@ -176,8 +174,7 @@ void fbViewportPutChar(FrameBuffer *fb, Window *W, int x, int y, char c, Style s
     x = W->x + W->viewport.left + x;
     y = W->y + W->viewport.top + y;
     
-    fb->grid[y*fb->cols + x].c = c;
-    fb->grid[y*fb->cols + x].style = style;
+    fbPutChar(fb, x, y, c, style);
 }
 
 void fbViewportDrawChars(FrameBuffer *fb, Window *W, int x, int y, const char *s, int len, Style style)

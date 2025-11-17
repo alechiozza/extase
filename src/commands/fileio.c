@@ -20,25 +20,6 @@
 #include <string.h>
 #include <fcntl.h>
 
-static bool isBinaryFile(const char *filename)
-{
-    FILE *fp = fopen(filename, "rb");
-    if (!fp) return false;
-
-    unsigned char buf[512];
-    size_t flen = fread(buf, 1, sizeof(buf), fp);
-    fclose(fp);
-
-    for (size_t i = 0; i < flen; i++)
-    {
-        unsigned char c = buf[i];
-        if (!(isprint(c) || c == TAB || c == 10 || c == 13)) /* TODO: shitty check*/
-            return true;
-    }
-
-    return false;
-}
-
 static TextBuffer *findOpenBuffer(const char *filename)
 {
     for (size_t i = 0; i < E.num_buf; i++)
@@ -58,13 +39,6 @@ int editorOpen(Window *W, const char *filename)
     if (existing != NULL && existing == W->buf)
     {
         return 0;
-    }
-
-    // TODO: handle binary file properly
-    if (isBinaryFile(filename))
-    {
-        editorFatalError("Binary file shit\n");
-        exit(EXIT_FAILURE);
     }
 
     if (W->buf != NULL)

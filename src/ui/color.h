@@ -64,7 +64,7 @@ typedef struct Style
 #define COLOR_DEFAULT_FG        COLOR_WHITE
 #define COLOR_DEFAULT_BG        COLOR_BLACK
 
-#define COLOR_LNE_HIGHLIGHT     RGB_COLOR( 40,  40,  40)
+#define COLOR_LINE_HIGHLIGHT     RGB_COLOR( 40,  40,  40)
 #define COLOR_UI_BLACK          RGB_COLOR( 50,  50,  50)
 #define COLOR_UI_DARK_BLACK     RGB_COLOR( 35,  35,  35)
 #define COLOR_DARK_BLACK        RGB_COLOR( 10,  10,  10)

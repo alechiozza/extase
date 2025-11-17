@@ -417,10 +417,7 @@ Widget *filePickerCreate(Window *W)
     picker->num_files = 0;
     picker->selected_index = -1;
 
-    if (getcwd(picker->current_path, PATH_MAX) == NULL)
-    {
-        strcpy(picker->current_path, ".");
-    }
+    strcpy(picker->current_path, ".");
 
     filePickerScanDirectory(picker);
     filePickerUpdateSelection(picker);
