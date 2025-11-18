@@ -52,8 +52,7 @@ void deleteBuffer(TextBuffer *buf)
     for (int i = 0; i < buf->numrows; i++)
     {
         free(buf->rows[i].chars);
-        free(buf->rows[i].render);
-        free(buf->rows[i].hl);
+        freeRender(&buf->rows[i].render);
     }
 
     free(buf->rows);

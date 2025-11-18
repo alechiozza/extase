@@ -30,11 +30,11 @@ typedef struct Match
 
 #define NO_MATCH (Match){-1,-1}
 
-static void restoreHL(Row *row, char **saved_hl)
+static void restoreHL(Row *row, unsigned char **saved_hl)
 {
     if (*saved_hl)
     {
-        memcpy(row->hl, *saved_hl, row->rsize);
+        memcpy(row->render.hl, *saved_hl, row->render.size);
         free(*saved_hl);
         *saved_hl = NULL;
     }     
@@ -50,14 +50,14 @@ static Match findForward(Window *W, const char *query, Match start_pos)
     // Check for a match on the *current line* after the cursor
     Row *row = &buf->rows[start_pos.y];
     char *found = NULL;
-    if (start_pos.x + 1 < row->rsize)
+    if (start_pos.x + 1 < (int)row->render.size) // TODO: fix the cast
     {
-        found = strstr(row->render + start_pos.x + 1, query);
+        found = strstr(row->render.c + start_pos.x + 1, query);
     }
 
     if (found)
     {
-        return (Match){(int)(found - row->render), start_pos.y};
+        return (Match){(int)(found - row->render.c), start_pos.y};
     }
 
     // If not found, search all subsequent lines
@@ -65,10 +65,10 @@ static Match findForward(Window *W, const char *query, Match start_pos)
     {
         int next_y = (start_pos.y + i) % buf->numrows;
         row = &buf->rows[next_y];
-        found = strstr(row->render, query);
+        found = strstr(row->render.c, query);
         if (found)
         {
-            return (Match){(int)(found - row->render), next_y};
+            return (Match){(int)(found - row->render.c), next_y};
         }
     }
 
@@ -84,12 +84,12 @@ static Match findBackward(Window *W, const char *query, Match start_pos)
     Row *row = &buf->rows[start_pos.y];
     char *found = NULL;
     char *last_match_on_line = NULL;
-    char *current_pos = row->render;
+    char *current_pos = row->render.c;
 
     // Check for matches on the *current line* before the cursor
     while ((found = strstr(current_pos, query)) != NULL)
     {
-        if (found - row->render < start_pos.x)
+        if (found - row->render.c < start_pos.x)
         {
             last_match_on_line = found;
             current_pos = found + 1;
@@ -102,7 +102,7 @@ static Match findBackward(Window *W, const char *query, Match start_pos)
 
     if (last_match_on_line)
     {
-        return (Match){(int)(last_match_on_line - row->render), start_pos.y};
+        return (Match){(int)(last_match_on_line - row->render.c), start_pos.y};
     }
 
     // If not, search all previous lines
@@ -113,7 +113,7 @@ static Match findBackward(Window *W, const char *query, Match start_pos)
 
         // Find the *last* match on this line
         last_match_on_line = NULL;
-        current_pos = row->render;
+        current_pos = row->render.c;
         while ((found = strstr(current_pos, query)) != NULL)
         {
             last_match_on_line = found;
@@ -122,7 +122,7 @@ static Match findBackward(Window *W, const char *query, Match start_pos)
 
         if (last_match_on_line)
         {
-            return (Match){(int)(last_match_on_line - row->render), prev_y};
+            return (Match){(int)(last_match_on_line - row->render.c), prev_y};
         }
     }
 
@@ -150,7 +150,7 @@ void editorFind(Window *W, int fd)
     FindDirection d = STAY_STILL;
     
     int saved_hl_line = -1;
-    char *saved_hl = NULL;
+    unsigned char *saved_hl = NULL;
     
     const char *prompt_prefix = "Search: ";
 
@@ -286,14 +286,14 @@ void editorFind(Window *W, int fd)
             Row *row = &buf->rows[match.y];
     
             saved_hl_line = match.y;
-            saved_hl = malloc(row->rsize);
+            saved_hl = malloc(row->render.size);
             if (!saved_hl)
             {
                 editorFatalError("Fatal! Memory allocation for highlight failed\n");
                 exit(EXIT_FAILURE);
             }
-            memcpy(saved_hl, row->hl, row->rsize);
-            memset(row->hl + match.x, HL_MATCH, strlen(query));
+            memcpy(saved_hl, row->render.hl, row->render.size);
+            memset(row->render.hl + match.x, HL_MATCH, strlen(query));
 
             W->cy = match.y;
             W->viewport.rowoff = 0;

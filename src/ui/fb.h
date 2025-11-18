@@ -43,6 +43,7 @@ void fbDrawString(FrameBuffer *fb, int x, int y, const char *s, Style style);
 void fbEraseLine(FrameBuffer *fb, int y, Color color);
 void fbEraseLineFrom(FrameBuffer *fb, int y, int x, Color color);
 
+void fbViewportPutCodepoint(FrameBuffer *fb, Window *W, int x, int y, uint32_t c, Style style);
 void fbWindowPutChar(FrameBuffer *fb, Window *W, int x, int y, char c, Style style);
 void fbWindowDrawChars(FrameBuffer *fb, Window *W, int x, int y, const char *s, int len, Style style);
 void fbWindowDrawString(FrameBuffer *fb, Window *W, int x, int y, const char *s, Style style);

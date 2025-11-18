@@ -5,10 +5,22 @@
 #include "color.h"
 #include "utils.h"
 #include "textbuffer.h"
+#include "render.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
+enum HL_Flags{
+    HL_HIGHLIGHT_STRINGS = (1 << 0),
+    HL_HIGHLIGHT_NUMBERS = (1 << 1)
+};
+
+typedef struct SyntaxGroup
+{
+    char **keywords;
+    Color color;
+} SyntaxGroup;
 
 char *test_extensions[] = {".c", ".h", NULL};
 char *keywords1[] = {
@@ -22,7 +34,7 @@ char *keywords2[] = {
 };
 char *keywords3[] = {
     "#if", "#elif", "#else", "#endif", "#ifdef", "#ifndef", "#elifdef",
-    "#elifndef", "#define", "#undef", "#include", "#embed", "#line"
+    "#elifndef", "#define", "#undef", "#include", "#embed", "#line",
     "#error", "#warning", "#pragma", NULL
 };
 SyntaxGroup test_group[] = {
@@ -59,20 +71,37 @@ typedef struct HighlightState
     const char *r_current;
     unsigned char *hl_current;
     int in_string;
-    int in_comment;
+    bool in_comment;
     bool prev_sep;
 } HighlightState;
 
 /* Return true if the specified row last char is part of a multi line comment
  * that starts at this row or at one before, and does not end at the end
  * of the row but spawns to the next row. */
-static int editorRowHasOpenComment(Row *row)
+static bool editorRowHasOpenComment(Row *row)
 {
-    if (row->hl && row->rsize && row->hl[row->rsize - 1] == HL_MLCOMMENT &&
-        (row->rsize < 2 || (row->render[row->rsize - 2] != '*' ||
-                            row->render[row->rsize - 1] != '/')))
-        return 1;
-    return 0;
+    if (row->render.hl && row->render.size && 
+        row->render.hl[row->render.size - 1] == HL_MLCOMMENT &&
+        (row->render.size < 2 || 
+        row->render.c[row->render.size - 2] != '*' ||
+        row->render.c[row->render.size - 1] != '/'))
+    {
+        return true;
+    }
+
+    return false;
+}
+
+static bool Highlight_Skip(HighlightState *s)
+{
+    if (*(s->hl_current) != HL_NORMAL)
+    {
+        s->r_current++;
+        s->hl_current++;
+        s->prev_sep = 1;
+        return true;
+    }
+    return false;
 }
 
 static bool Highlight_SingleLineComment(HighlightState *s)
@@ -81,7 +110,7 @@ static bool Highlight_SingleLineComment(HighlightState *s)
 
     if (s->prev_sep && *s->r_current == start[0] && *(s->r_current + 1) == start[1])
     {
-        memset(s->hl_current, HL_COMMENT, s->row->rsize - (s->hl_current-s->row->hl));
+        memset(s->hl_current, HL_COMMENT, s->row->render.size - (s->hl_current-s->row->render.hl));
         return true;
     }
     return false;
@@ -157,23 +186,10 @@ static bool Highlight_String(HighlightState *s)
     return false;
 }
 
-static bool Highlight_NonPrintable(HighlightState *s)
-{
-    if (!isprint(*s->r_current))
-    {
-        *(s->hl_current) = HL_NONPRINT;
-        s->r_current++;
-        s->hl_current++;
-        s->prev_sep = 0;
-        return true;
-    }
-    return false;
-}
-
 static bool Highlight_Number(HighlightState *s)
 {
     bool is_number = (isdigit(*s->r_current) && (s->prev_sep || *(s->hl_current - 1) == HL_NUMBER));
-    bool is_float = (*s->r_current == '.' && s->hl_current > s->row->hl && *(s->hl_current - 1) == HL_NUMBER);
+    bool is_float = (*s->r_current == '.' && s->hl_current > s->row->render.hl && *(s->hl_current - 1) == HL_NUMBER);
 
     if (is_number || is_float)
     {
@@ -217,19 +233,14 @@ void editorUpdateSyntax(TextBuffer *buf, int row_idx)
     Row *row = &buf->rows[row_idx];
     Syntax *syntax = buf->syntax;
 
-    row->hl = realloc(row->hl, row->rsize);
-    if (row->hl == NULL)
-        return; // TODO: Handle memory failure
-    memset(row->hl, HL_NORMAL, row->rsize);
-
     if (syntax == NULL)
         return;
 
     HighlightState s;
     s.row = row;
     s.syntax = syntax;
-    s.r_current = row->render;
-    s.hl_current = row->hl;
+    s.r_current = row->render.c;
+    s.hl_current = row->render.hl;
     s.in_string = 0;
     s.in_comment = (row->idx > 0 && editorRowHasOpenComment(&buf->rows[row->idx - 1]));
     s.prev_sep = 1;
@@ -242,10 +253,10 @@ void editorUpdateSyntax(TextBuffer *buf, int row_idx)
 
     while (*s.r_current)
     {
+        if (Highlight_Skip(&s))               continue;
         if (Highlight_MultiLineComment(&s))   continue;
         if (Highlight_SingleLineComment(&s))  break;
         if (Highlight_String(&s))             continue;
-        if (Highlight_NonPrintable(&s))       continue;
         if (Highlight_Number(&s))             continue;
         if (Highlight_Keywords(&s))           continue;
 
@@ -254,20 +265,20 @@ void editorUpdateSyntax(TextBuffer *buf, int row_idx)
         s.hl_current++;
     }
 
-    int open_comment = editorRowHasOpenComment(row);
-    if (row->hl_oc != open_comment && row->idx + 1 < buf->numrows)
+    if (editorRowHasOpenComment(row) && row->idx + 1 < buf->numrows)
     {
         editorUpdateSyntax(buf, row->idx + 1);
     }
-    row->hl_oc = open_comment;
 }
 
-Style editorSyntaxToColor(int hl)
+Style editorSyntaxToColor(unsigned char hl)
 {
     switch (hl)
     {
     case HL_NORMAL:
         return STYLE_NORMAL;
+    case HL_NONPRINT:
+        return STYLE_INVERSE;
     case HL_COMMENT:
     case HL_MLCOMMENT:
         return (Style){COLOR_CYAN, COLOR_BLACK, 0};
@@ -283,6 +294,8 @@ Style editorSyntaxToColor(int hl)
         return (Style){COLOR_RED, COLOR_BLACK, 0};
     case HL_MATCH:
         return (Style){COLOR_BLUE, COLOR_BLACK, ATTR_INVERSE};
+    case HL_TAB:
+        return (Style){COLOR_RED, COLOR_YELLOW, 0};
     default:
         return STYLE_NORMAL;
     }

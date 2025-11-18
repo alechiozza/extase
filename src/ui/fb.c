@@ -167,6 +167,16 @@ void fbWindowEraseLineFrom(FrameBuffer *fb, Window *W, int y, int x, Color color
         fbWindowPutChar(fb, W, i, y, ' ', (Style){COLOR_DEFAULT_FG, color, 0});
 }
 
+void fbViewportPutCodepoint(FrameBuffer *fb, Window *W, int x, int y, uint32_t c, Style style)
+{
+    if (x < 0 || y < 0 || y >= W->viewport.rows || x >= W->viewport.cols) return;
+
+    x = W->x + W->viewport.left + x;
+    y = W->y + W->viewport.top + y;
+    
+    fbPutCodepoint(fb, x, y, c, style);
+}
+
 void fbViewportPutChar(FrameBuffer *fb, Window *W, int x, int y, char c, Style style)
 {
     if (x < 0 || y < 0 || y >= W->viewport.rows || x >= W->viewport.cols) return;

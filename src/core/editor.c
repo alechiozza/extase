@@ -10,6 +10,7 @@
 #include "widget.h"
 #include "cursor.h"
 #include "textbuffer.h"
+#include "render.h"
 
 #include <stdlib.h>
 #include <unistd.h>

@@ -192,13 +192,13 @@ static void drawTextBuffer(FrameBuffer *fb, Window *W)
 
         Row *r = &W->buf->rows[filerow];
 
-        int len = r->rsize - W->viewport.coloff;
+        int len = r->render.size - W->viewport.coloff;
 
         if (len > W->viewport.cols)
             len = W->viewport.cols;
         
-        char *c = r->render + W->viewport.coloff;
-        unsigned char *hl = r->hl + W->viewport.coloff;
+        char *c = r->render.c + W->viewport.coloff;
+        unsigned char *hl = r->render.hl + W->viewport.coloff;
         for (int x = 0; x < len; x++)
         {
             Style style = editorSyntaxToColor(hl[x]);
@@ -207,15 +207,8 @@ static void drawTextBuffer(FrameBuffer *fb, Window *W)
             {
                 style.bg = COLOR_LINE_HIGHLIGHT;
             }
-
-            if (hl[x] == HL_NONPRINT)
-            {
-                fbViewportPutChar(fb, W, x, y, '?', style);
-            }
-            else
-            {
-                fbViewportPutChar(fb, W, x, y, *(c+x), style);
-            }
+            
+            fbViewportPutChar(fb, W, x, y, *(c+x), style);
         }
 
         if (len < 0) len = 0; /* fuck me, it took an hour to figure this out */

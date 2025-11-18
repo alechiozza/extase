@@ -4,6 +4,8 @@
 #include <stdint.h>
 
 #define UNICODE_UNKNOWN 0xFFFD
+#define UNICODE_RIGHT_ARROW 0x2192
+
 #define BOX_HORIZONTAL  0x2500
 #define BOX_VERTICAL    0x2502
 #define BOX_TOPLEFT     0x250c

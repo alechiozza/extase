@@ -5,6 +5,7 @@
 
 typedef struct TextBuffer TextBuffer;
 typedef struct Style Style;
+typedef struct SyntaxGroup SyntaxGroup;
 
 enum HL
 {
@@ -17,19 +18,9 @@ enum HL
     HL_KEYWORD3,
     HL_STRING,
     HL_NUMBER,
-    HL_MATCH
+    HL_MATCH,
+    HL_TAB
 };
-
-enum HL_Flags{
-    HL_HIGHLIGHT_STRINGS = (1 << 0),
-    HL_HIGHLIGHT_NUMBERS = (1 << 1)
-};
-
-typedef struct SyntaxGroup
-{
-    char **keywords;
-    Color color;
-} SyntaxGroup;
 
 typedef struct Syntax
 {
@@ -42,7 +33,7 @@ typedef struct Syntax
 } Syntax;
 
 void editorSelectSyntaxHighlight(TextBuffer *buf, const char *filename);
-Style editorSyntaxToColor(int hl);
+Style editorSyntaxToColor(unsigned char hl);
 void editorUpdateSyntax(TextBuffer *buf, int row_idx);
 
 #endif /* __EDITOR_SYNTAX_H */
