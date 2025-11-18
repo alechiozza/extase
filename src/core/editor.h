@@ -55,6 +55,7 @@ struct editorConfig
     bool too_small;  /* The screen is too small to be rendered */
     bool auto_paren; /* Enable smart parentesis */
     bool auto_indent;
+    bool use_tabs;
     char statusmsg[EDITOR_STATUSMSG_LENGTH];
     int mode;
 

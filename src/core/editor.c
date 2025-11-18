@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <string.h>
+#include <ctype.h>
 
 struct editorConfig E;
 
@@ -37,6 +38,7 @@ void initEditor(char *filename)
     E.relativenums = true;
     E.auto_paren = true;
     E.auto_indent = true;
+    E.use_tabs = false;
 
     updateWindowSize();
     signal(SIGWINCH, handleSigWinCh);
@@ -105,6 +107,12 @@ char editorGetCharBeforeCursor(Window *W)
 
 void editorIndentLine(Window *W)
 {
+    if (E.use_tabs)
+    {
+        editorInsertChar(W, '\t');
+        return;
+    }
+
     int column = W->viewport.coloff + W->cx;
     do
     {
@@ -120,9 +128,9 @@ static void editorIndentNewline(Window *W)
 
     if (previous_row == NULL) return; /* Function misused */
 
-    for (char *current = previous_row->chars; *current == ' '; current++)
+    for (char *current = previous_row->chars; isspace(*current); current++)
     {
-        editorInsertChar(W, ' ');
+        editorInsertChar(W, *current);
     }
 }
 
