@@ -56,6 +56,7 @@ struct editorConfig
     bool auto_paren; /* Enable smart parentesis */
     bool auto_indent;
     bool use_tabs;
+    bool no_topbar;
     char statusmsg[EDITOR_STATUSMSG_LENGTH];
     int mode;
 

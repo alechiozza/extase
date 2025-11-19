@@ -288,7 +288,8 @@ static int computeCY()
 
 void editorRefreshScreen(void)
 {
-    drawTopBar(E.fb);
+    if (!E.no_topbar)
+        drawTopBar(E.fb);
 
     // TODO: for every window
 

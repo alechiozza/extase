@@ -134,9 +134,9 @@ void computeWindowLayout(void)
         return;
 
     layout_root->x = 0;
-    layout_root->y = TOPBAR_SIZE;
+    layout_root->y = E.no_topbar ? 0 : TOPBAR_SIZE;
     layout_root->width = E.screencols;
-    layout_root->height = E.screenrows - TOPBAR_SIZE - INFOBAR_SIZE;
+    layout_root->height = E.screenrows - layout_root->y - INFOBAR_SIZE;
 
     computeNodeLayout(layout_root);
 }

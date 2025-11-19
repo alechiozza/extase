@@ -39,6 +39,7 @@ void initEditor(char *filename)
     E.auto_paren = true;
     E.auto_indent = true;
     E.use_tabs = false;
+    E.no_topbar = false;
 
     updateWindowSize();
     signal(SIGWINCH, handleSigWinCh);
