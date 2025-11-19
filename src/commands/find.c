@@ -61,7 +61,7 @@ static Match findForward(Window *W, const char *query, Match start_pos)
     }
 
     // If not found, search all subsequent lines
-    for (int i = 1; i < buf->numrows; i++)
+    for (int i = 1; i <= buf->numrows; i++)
     {
         int next_y = (start_pos.y + i) % buf->numrows;
         row = &buf->rows[next_y];
@@ -106,7 +106,7 @@ static Match findBackward(Window *W, const char *query, Match start_pos)
     }
 
     // If not, search all previous lines
-    for (int i = 1; i < buf->numrows; i++)
+    for (int i = 1; i <= buf->numrows; i++)
     {
         int prev_y = (start_pos.y - i + buf->numrows) % buf->numrows;
         row = &buf->rows[prev_y];
