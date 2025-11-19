@@ -162,6 +162,22 @@ void editorInsertNewline(Window *W)
     editorIndentNewline(W);
 }
 
+void editorDelLine(Window *W)
+{
+    int filerow = W->viewport.rowoff + W->cy;
+    TextBuffer *buf = W->buf;
+    Row *row = (filerow >= buf->numrows) ? NULL : &buf->rows[filerow];
+
+    if (!row)
+        return;
+    
+    editorDelRow(buf, filerow);
+
+    editorMoveCursorLineStart(W);
+ 
+    buf->dirty = true;
+}
+
 /* Delete the char at the current prompt position. */
 void editorDelChar(Window *W)
 {
@@ -247,4 +263,32 @@ void editorDelNextChar(Window *W)
     }
     
     buf->dirty = true;
+}
+
+void editorDelLineTo(Window *W)
+{
+    int filerow = W->viewport.rowoff + W->cy;
+    int filecol = W->viewport.coloff + W->cx;
+    TextBuffer *buf = W->buf;
+    Row *row = (filerow >= buf->numrows) ? NULL : &buf->rows[filerow];
+
+    if (!row || (filecol == 0 && filerow == 0))
+        return;
+    
+    editorRowDelChunk(buf, filerow, 0, filecol);
+    
+    editorMoveCursorLineStart(W);
+}
+
+void editorDelLineFrom(Window *W)
+{
+    int filerow = W->viewport.rowoff + W->cy;
+    int filecol = W->viewport.coloff + W->cx;
+    TextBuffer *buf = W->buf;
+    Row *row = (filerow >= buf->numrows) ? NULL : &buf->rows[filerow];
+
+    if (!row || (filecol == 0 && filerow == 0))
+        return;
+    
+    editorRowDelChunk(buf, filerow, filecol, row->size);
 }

@@ -168,3 +168,21 @@ void editorRowDelChar(TextBuffer *buf, int row_idx, int at)
     
     buf->dirty = true;
 }
+
+void editorRowDelChunk(TextBuffer *buf, int row_idx, int from, int to)
+{
+    if (!buf || row_idx < 0 || row_idx >= buf->numrows || from < 0)
+        return;
+
+    Row *row = &buf->rows[row_idx];
+    
+    if (from >= row->size || to <= from)
+        return;
+    
+    memmove(row->chars + from, row->chars + to, row->size - from);
+    row->size -= to - from;
+    
+    editorUpdateRow(buf, row_idx);
+    
+    buf->dirty = true;
+}

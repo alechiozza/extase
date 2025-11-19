@@ -21,6 +21,6 @@ void editorRowInsertChar(TextBuffer *buf, int row_idx, int at, int c);
 char editorRowGetChar(Row *row, int at);
 void editorRowAppendString(TextBuffer *buf, int row_idx, char *s, size_t len);
 void editorRowDelChar(TextBuffer *buf, int row_idx, int at);
-
+void editorRowDelChunk(TextBuffer *buf, int row_idx, int from, int to);
 
 #endif /* __EDITOR_CORE_H */

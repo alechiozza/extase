@@ -71,6 +71,9 @@ void deleteBuffer(TextBuffer *buf);
 void initEditor(char *filename);
 
 void editorInsertNewline(Window *W);
+void editorDelLine(Window *W);
+void editorDelLineTo(Window *W);
+void editorDelLineFrom(Window *W);
 void editorDelChar(Window *W);
 void editorDelNextChar(Window *W);
 void editorInsertChar(Window *W, int c);

@@ -8,6 +8,7 @@
 #include "ui.h"
 #include "window.h"
 #include "widget.h"
+#include "utils.h"
 
 #include <unistd.h>
 
@@ -60,6 +61,27 @@ static void processWindowMode(int fd)
         case 's':
             editorSplitWindow(SPLIT_HORIZONTAL);
             break;
+    }
+}
+
+static void deleteMode(int fd)
+{
+    int c = editorReadKey(fd);
+
+    switch (c)
+    {
+        case 'd':
+            editorDelLine(E.active_win);
+            break;
+        case 'w':
+            break;
+        case '0':
+            editorDelLineTo(E.active_win);
+            break;
+        case '$':
+            editorDelLineFrom(E.active_win);
+            break;
+
     }
 }
 
@@ -124,6 +146,9 @@ void editorNMProcessKeypress(int key)
         break;
     case CTRL_W:
         processWindowMode(STDIN_FILENO);
+        break;
+    case 'd':
+        deleteMode(STDIN_FILENO);
         break;
     case 'i':
     case 'I':
