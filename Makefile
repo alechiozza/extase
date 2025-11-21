@@ -3,6 +3,9 @@ SRC_DIR = src
 BUILD_ROOT = build
 ARGS ?= test.c
 
+PREFIX ?= /usr/local
+BINDIR ?= $(PREFIX)/bin
+
 BUILD_DIR_RELEASE = $(BUILD_ROOT)/release
 BUILD_DIR_DEBUG = $(BUILD_ROOT)/debug
 
@@ -62,6 +65,17 @@ $(BUILD_DIR_DEBUG)/%.o: $(SRC_DIR)/%.c
 clean:
 	@echo "Cleaning all build artifacts..."
 	rm -rf $(BUILD_ROOT)
+
+.PHONY: install
+install: all
+	@echo "Installing to $(BINDIR)..."
+	install -d $(BINDIR)
+	install -m 755 $(TARGET_RELEASE) $(BINDIR)/$(TARGET)
+
+.PHONY: uninstall
+uninstall:
+	@echo "Uninstalling from $(BINDIR)..."
+	rm -f $(BINDIR)/$(TARGET)
 
 .PHONY: run
 run: all
