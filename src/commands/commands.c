@@ -6,6 +6,7 @@
 #include "event.h"
 #include "term.h"
 #include "textbuffer.h"
+#include "render.h"
 
 #include <string.h>
 #include <ctype.h>
@@ -67,21 +68,6 @@ void command_handler_quit(int fd, int argc, char **argv)
     (void)argc;
     (void)argv;
     editorQuit(E.active_win->buf, fd);
-}
-
-void editorToggleLinenum(void)
-{
-    E.linenums = !E.linenums;
-
-    computeWindowLayout();
-}
-
-void command_handler_line(int fd, int argc, char **argv)
-{
-    (void)fd;
-    (void)argc;
-    (void)argv;
-    editorToggleLinenum();
 }
 
 static bool confirmOpening(int fd)
@@ -187,3 +173,32 @@ void command_handler_open(int fd, int argc, char **argv)
     editorOpenFromWin(E.active_win, fd);
 }
 
+void editorToggleLinenum(void)
+{
+    E.linenums = !E.linenums;
+
+    computeWindowLayout();
+}
+
+void command_handler_line(int fd, int argc, char **argv)
+{
+    (void)fd;
+    (void)argc;
+    (void)argv;
+    editorToggleLinenum();
+}
+
+void editorToggleTabs(void)
+{
+    E.active_win->buf->indent_mode = !E.active_win->buf->indent_mode;
+
+    editorUpdateRender(E.active_win->buf);
+}
+
+void command_handler_tabs(int fd, int argc, char **argv)
+{
+    (void)fd;
+    (void)argc;
+    (void)argv;
+    editorToggleTabs();
+}

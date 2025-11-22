@@ -38,7 +38,6 @@ void initEditor(char *filename)
     E.relativenums = true;
     E.auto_paren = true;
     E.auto_indent = true;
-    E.use_tabs = false;
     E.no_topbar = false;
 
     updateWindowSize();
@@ -108,7 +107,7 @@ char editorGetCharBeforeCursor(Window *W)
 
 void editorIndentLine(Window *W)
 {
-    if (E.use_tabs)
+    if (W->buf->indent_mode == INDENT_WITH_TABS)
     {
         editorInsertChar(W, '\t');
         return;
@@ -119,7 +118,7 @@ void editorIndentLine(Window *W)
     {
         editorInsertChar(W, ' ');
         column++;
-    } while (column % TAB_SIZE != 0);
+    } while (column % W->buf->indent_size != 0);
 }
 
 static void editorIndentNewline(Window *W)
@@ -222,7 +221,7 @@ void editorDelChar(Window *W)
                 editorMoveCursorLeft(W);
                 
                 filecol--;
-            } while (filecol > 0 && filecol % TAB_SIZE != 0 && editorRowGetChar(row, filecol-1) == ' ');
+            } while (filecol > 0 && filecol % buf->indent_size != 0 && editorRowGetChar(row, filecol-1) == ' ');
         }
         else
         {

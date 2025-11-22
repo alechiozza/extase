@@ -30,11 +30,12 @@ typedef struct ShellAlias
 } ShellAlias;
 
 static const ShellCommand BUILTIN_COMMANDS[] = {
-    {"quit",    command_handler_quit, 0, 0},
-    {"find",    command_handler_find, 0, 1},
-    {"line",    command_handler_line, 0, 0},
-    {"save",    command_handler_save, 0, 1},
-    {"open",    command_handler_open, 0, 0}
+    {"quit",    command_handler_quit,       0, 0},
+    {"find",    command_handler_find,       0, 1},
+    {"line",    command_handler_line,       0, 0},
+    {"save",    command_handler_save,       0, 1},
+    {"open",    command_handler_open,       0, 0},
+    {"tabs",    command_handler_tabs,       0, 0}
 };
 
 // TODO: alias customizable from the config file

@@ -260,7 +260,7 @@ static int computeCX()
         for (int j = W->viewport.coloff; j < (W->cx+W->viewport.coloff); j++)
         {
             if (j < row->size && row->chars[j] == TAB) 
-                cx += TAB_SIZE - ((cx)%TAB_SIZE);
+                cx += W->buf->indent_size - ((cx)%W->buf->indent_size);
             
             cx++;
         }

@@ -3,7 +3,6 @@
 
 #define EDITOR_VERSION "0.0.1"
 
-#define TAB_SIZE 4
 #define TOPBAR_SIZE 1
 #define INFOBAR_SIZE 1
 #define SCROLLBAR_SIZE 1
@@ -55,7 +54,6 @@ struct editorConfig
     bool too_small;  /* The screen is too small to be rendered */
     bool auto_paren; /* Enable smart parentesis */
     bool auto_indent;
-    bool use_tabs;
     bool no_topbar;
     char statusmsg[EDITOR_STATUSMSG_LENGTH];
     int mode;

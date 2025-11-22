@@ -19,9 +19,11 @@ TextBuffer *createBuffer(const char *filename)
     }
     buf->numrows = 0;
     buf->rows = NULL;
-    buf->dirty = false;
     buf->syntax = NULL;
     buf->filename = strdup(filename);
+    buf->dirty = false;
+    buf->indent_mode = INDENT_WITH_SPACES;
+    buf->indent_size = DEFAULT_INDENT_SIZE;
 
     E.buf[E.num_buf] = buf;
 

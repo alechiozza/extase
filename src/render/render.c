@@ -12,14 +12,15 @@
 #include <ctype.h>
 #include <string.h>
 
-static void updateRenderedRow(Row *row)
+static void updateRenderedRow(TextBuffer *buf, int row_idx)
 {
+    Row *row = &buf->rows[row_idx];
     unsigned int tabs = 0;
 
     for (int j = 0; j < row->size; j++)
         if (row->chars[j] == TAB) tabs++;
     
-    unsigned int allocsize = row->size + tabs*TAB_SIZE + 1;
+    unsigned int allocsize = row->size + tabs*buf->indent_size + 1;
     if (allocsize > UINT32_MAX)
     {
         editorFatalError("Lines are too long (you crazy boy)\n");
@@ -50,15 +51,27 @@ static void updateRenderedRow(Row *row)
     {
         if (row->chars[j] == TAB)
         {
-            render->c[idx] = '>';
-            render->hl[idx] = HL_TAB;
-            idx++;
-
-            while((idx) % TAB_SIZE != 0)
+            if (buf->indent_mode == INDENT_WITH_TABS)
             {
-                render->c[idx] = ' ';
+                render->c[idx++] = ' ';
+
+                while((idx) % buf->indent_size != 0)
+                {
+                    render->c[idx++] = ' ';
+                }
+            }
+            else // INDENT_WITH_SPACES
+            {
+                render->c[idx] = '>';
                 render->hl[idx] = HL_TAB;
                 idx++;
+
+                while((idx) % buf->indent_size != 0)
+                {
+                    render->c[idx] = ' ';
+                    render->hl[idx] = HL_TAB;
+                    idx++;
+                }
             }
         }
         else if (!isprint(row->chars[j]))
@@ -85,8 +98,17 @@ static void updateRenderedRow(Row *row)
 
 void editorUpdateRow(TextBuffer *buf, int row_idx)
 {
-    updateRenderedRow(&buf->rows[row_idx]);
+    updateRenderedRow(buf, row_idx);
     editorUpdateSyntax(buf, row_idx);
+}
+
+void editorUpdateRender(TextBuffer *buf)
+{
+    for (int i = 0; i < buf->numrows; i++)
+    {
+        updateRenderedRow(buf, i);
+        editorUpdateSyntax(buf, i);
+    }
 }
 
 void freeRender(RenderRow *r)

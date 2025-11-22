@@ -113,6 +113,9 @@ void editorNMProcessKeypress(int key)
     case CTRL_L:
         editorToggleLinenum();
         break;
+    case CTRL_T:
+        editorToggleTabs();
+        break;
     case CTRL_O:
     {
         Widget *picker = filePickerCreate(E.active_win);

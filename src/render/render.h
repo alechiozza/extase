@@ -16,6 +16,8 @@ typedef struct RenderRow
 #define RENDER_NULL (RenderRow){NULL, NULL, 0}
 
 void editorUpdateRow(TextBuffer *buf, int row_idx);
+void editorUpdateRender(TextBuffer *buf);
+
 void freeRender(RenderRow *r);
 
 #endif /* __EDITOR_RENDER_H */
