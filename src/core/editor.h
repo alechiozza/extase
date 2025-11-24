@@ -46,13 +46,11 @@ struct editorConfig
     Widget *active_widget;
     size_t num_widget;
 
-    // TODO: Widgets here
-
     bool linenums;
     bool relativenums; /* Enable line numbers relative numeration */
     bool rawmode;    /* Is terminal raw mode enabled? */
     bool too_small;  /* The screen is too small to be rendered */
-    bool auto_paren; /* Enable smart parentesis */
+    bool auto_paren;
     bool auto_indent;
     bool no_topbar;
     char statusmsg[EDITOR_STATUSMSG_LENGTH];

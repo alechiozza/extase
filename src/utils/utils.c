@@ -36,3 +36,19 @@ bool is_separator(int c)
 {
     return !(isalnum(c) || c == '_' || c == '#');
 }
+
+bool is_num(const char *str)
+{
+    size_t i = 0;
+    if (str[i] == '+' || str[i] == '-') i++;
+
+    while (str[i] != '\0')
+    {
+        if (str[i] < '0' || str[i] > '9')
+            return false;
+
+        i++;
+    }
+
+    return true;
+}

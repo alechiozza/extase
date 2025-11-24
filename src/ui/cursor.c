@@ -174,6 +174,21 @@ void editorCenterCursor(Window *W)
     }
 }
 
+void editorMoveCursorTo(Window *W, int x, int y)
+{
+    if (x < 0 || y < 0 || 
+        y > W->buf->numrows || x > W->buf->rows[y].render.size)
+        return;
+    
+    W->cx = x;
+    W->cy = y;
+    W->expected_cx = x;
+    W->viewport.rowoff = 0;
+    W->viewport.coloff = 0;
+
+    editorCenterCursor(W);
+}
+
 void editorScrollUp(Window *W)
 {
     if (W->viewport.rowoff == 0) return;

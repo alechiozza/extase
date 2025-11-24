@@ -1,9 +1,12 @@
 #include "commands.h"
+
 #include "editor.h"
 #include "event.h"
 #include "term.h"
 #include "ui.h"
 #include "window.h"
+#include "utils.h"
+#include "cursor.h"
 
 #include <unistd.h>
 #include <string.h>
@@ -80,6 +83,23 @@ static int commandExec(int fd, const char *command, int len)
 
     const char *cmd_name = argv[0];
     bool found = false;
+    
+    if (is_num(cmd_name))
+    {
+        int lnum = atoi(cmd_name);
+
+        if (cmd_name[0] == '+' || cmd_name[0] == '-')
+        {
+            editorMoveCursorTo(E.active_win, 0, E.active_win->cy+E.active_win->viewport.rowoff+lnum);
+        }
+        else
+        {
+            editorMoveCursorTo(E.active_win, 0, lnum-1);
+        }
+
+        free(cmd_copy);
+        return 0;
+    }
 
     /* Resolve aliases first */
     for (size_t i = 0; i < ALIAS_NUM; i++)

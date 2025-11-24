@@ -14,6 +14,7 @@ void editorMoveCursorLineStart(Window *W);
 void editorMoveCursorPageUp(Window *W);
 void editorMoveCursorPageDown(Window *W);
 
+void editorMoveCursorTo(Window *W, int x, int y);
 void editorCenterCursor(Window *W);
 
 void editorScrollUp(Window *W);
