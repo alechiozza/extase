@@ -144,7 +144,7 @@ void editorOpenFromWin(Window *W, int fd)
             editorSetStatusMessage("");
             if (query[0] != '\0')
             {
-                if (strcmp(query, W->buf->filename) == 0) return;
+                if (strcmp(query, W->buf->file_path) == 0) return;
 
                 if (W->buf->dirty)
                 {

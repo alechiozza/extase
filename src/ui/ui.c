@@ -11,6 +11,7 @@
 #include "utils.h"
 #include "widget.h"
 #include "textbuffer.h"
+#include "utf8.h"
 
 #include <unistd.h>
 #include <string.h>
@@ -83,6 +84,34 @@ static void drawScrollBar(FrameBuffer *fb, Window *W)
     }
 }
 
+static void drawTabsView(FrameBuffer *fb, Window *W)
+{
+    fbWindowEraseLine(fb, W, 0, COLOR_DARK_BLACK);
+
+    int len = W->viewport.left;
+    Style style;
+    Style bar_style;
+
+    for (int i = 0; i < 1; i++)
+    {
+        style = (i == 0) ? STYLE_NORMAL : (Style){COLOR_BRIGHT_BLACK, COLOR_DARK_BLACK, 0};
+        bar_style = (i == 0) ?  (Style){COLOR_BRIGHT_BLACK, COLOR_DEFAULT_BG, 0} : 
+                                (Style){(Color){RGB_COLOR(5,5,5)}, COLOR_DARK_BLACK, 0};
+
+        fbWindowPutCodepoint(fb, W, len, 0, UNICODE_LEFT_BAR, bar_style);
+        len++;
+        fbWindowDrawString(fb, W, len, 0, "  ", style);
+        len+=2;
+        fbWindowDrawString(fb, W, len, 0, W->buf->filename, style);
+        len += strlen(W->buf->filename);
+        fbWindowDrawString(fb, W, len, 0, "   ", style);
+        len+=3;
+
+        if (len >= W->width)
+            break;
+    }
+}
+
 static void drawStatusBar(FrameBuffer *fb)
 {
     int msglen = strlen(E.statusmsg);
@@ -111,6 +140,7 @@ static void drawLineNumber(FrameBuffer *fb, Window *W, int y, int width)
     int blen;
     int filerow = W->viewport.rowoff + y;
     int current_row = W->viewport.rowoff + W->cy;
+    y += W->viewport.top;
 
     if (filerow >= W->buf->numrows)
     {
@@ -295,6 +325,8 @@ void editorRefreshScreen(void)
 
     for (size_t i = 0; i < E.num_win; i++)
     {
+        drawTabsView(E.fb, E.win[i]);
+
         if (E.win[i]->buf->numrows == 0)
             drawWelcomeScreen(E.fb, E.win[i]);
         else

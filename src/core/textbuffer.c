@@ -3,11 +3,12 @@
 #include "editor.h"
 #include "core.h"
 #include "event.h"
+#include "utils.h"
 
 #include <string.h>
 #include <stdlib.h>
 
-TextBuffer *createBuffer(const char *filename)
+TextBuffer *createBuffer(const char *file_path)
 {
     if (E.num_buf == EDITOR_MAX_BUF) return NULL;
 
@@ -20,7 +21,8 @@ TextBuffer *createBuffer(const char *filename)
     buf->numrows = 0;
     buf->rows = NULL;
     buf->syntax = NULL;
-    buf->filename = strdup(filename);
+    buf->file_path = strdup(file_path);
+    buf->filename = get_filename_from_path(buf->file_path);
     buf->dirty = false;
     buf->indent_mode = INDENT_WITH_SPACES;
     buf->indent_size = DEFAULT_INDENT_SIZE;
@@ -49,7 +51,7 @@ void deleteBuffer(TextBuffer *buf)
         exit(EXIT_FAILURE);
     }
 
-    free(buf->filename);
+    free(buf->file_path);
 
     for (int i = 0; i < buf->numrows; i++)
     {

@@ -339,7 +339,7 @@ static int filePickerHandleInput(Widget *self, int key)
                 return WIDGET_CONTINUE;
             }
 
-            if (strcmp(full_path, picker->window->buf->filename) == 0)
+            if (strcmp(full_path, picker->window->buf->file_path) == 0)
                 return WIDGET_CLOSE;
 
             if (picker->window->buf->dirty)

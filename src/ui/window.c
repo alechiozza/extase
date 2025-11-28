@@ -56,7 +56,7 @@ static void computeNodeLayout(LayoutNode *node)
 
         int left_padding = (E.linenums ? getLineNumberWidth(W) : 0);
 
-        W->viewport.top = 0;
+        W->viewport.top = TAB_VIEW_SIZE;
         W->viewport.bottom = INFOBAR_SIZE;
         W->viewport.left = left_padding;
         W->viewport.right = SCROLLBAR_SIZE;
@@ -134,7 +134,7 @@ void computeWindowLayout(void)
         return;
 
     layout_root->x = 0;
-    layout_root->y = E.no_topbar ? 0 : TOPBAR_SIZE;
+    layout_root->y = (E.no_topbar ? 0 : TOPBAR_SIZE);
     layout_root->width = E.screencols;
     layout_root->height = E.screenrows - layout_root->y - INFOBAR_SIZE;
 

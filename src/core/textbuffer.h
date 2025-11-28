@@ -13,7 +13,8 @@ typedef struct Syntax Syntax;
 
 typedef struct TextBuffer
 {
-    char *filename;
+    char *file_path;
+    const char *filename;
     int numrows;
     Row *rows;
     Syntax *syntax;
@@ -22,7 +23,7 @@ typedef struct TextBuffer
     unsigned char indent_size;
 } TextBuffer;
 
-TextBuffer *createBuffer(const char *filename);
+TextBuffer *createBuffer(const char *file_path);
 void deleteBuffer(TextBuffer *buf);
 
 #endif /* __EDITOR_TEXTBUFFER_H */

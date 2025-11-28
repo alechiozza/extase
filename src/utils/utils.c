@@ -52,3 +52,15 @@ bool is_num(const char *str)
 
     return true;
 }
+
+const char *get_filename_from_path(const char *path)
+{
+    const char *last_slash = strrchr(path, '/');
+
+    if (last_slash != NULL)
+    {
+        return last_slash + 1;
+    }
+
+    return path;
+}

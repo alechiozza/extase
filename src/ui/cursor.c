@@ -177,7 +177,7 @@ void editorCenterCursor(Window *W)
 void editorMoveCursorTo(Window *W, int x, int y)
 {
     if (x < 0 || y < 0 || 
-        y > W->buf->numrows || x > W->buf->rows[y].render.size)
+        y > W->buf->numrows || x > (int)W->buf->rows[y].render.size)
         return;
     
     W->cx = x;

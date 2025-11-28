@@ -20,12 +20,12 @@
 #include <string.h>
 #include <fcntl.h>
 
-static TextBuffer *findOpenBuffer(const char *filename)
+static TextBuffer *findOpenBuffer(const char *file_path)
 {
     for (size_t i = 0; i < E.num_buf; i++)
     {
-        if (E.buf[i]->filename == NULL) continue;
-        if (strcmp(E.buf[i]->filename, filename) == 0)
+        if (E.buf[i]->file_path == NULL) continue;
+        if (strcmp(E.buf[i]->file_path, file_path) == 0)
         {
             return E.buf[i];
         }
@@ -33,9 +33,9 @@ static TextBuffer *findOpenBuffer(const char *filename)
     return NULL;
 }
 
-int editorOpen(Window *W, const char *filename)
+int editorOpen(Window *W, const char *file_path)
 {
-    TextBuffer *existing = findOpenBuffer(filename);
+    TextBuffer *existing = findOpenBuffer(file_path);
     if (existing != NULL && existing == W->buf)
     {
         return 0;
@@ -52,7 +52,7 @@ int editorOpen(Window *W, const char *filename)
         return 0;
     }
 
-    TextBuffer *buf = createBuffer(filename);
+    TextBuffer *buf = createBuffer(file_path);
     if (buf == NULL)
     {
         exit(EXIT_FAILURE); // TODO: meh
@@ -60,9 +60,9 @@ int editorOpen(Window *W, const char *filename)
 
     W->buf = buf;
 
-    editorSelectSyntaxHighlight(W->buf, filename);
+    editorSelectSyntaxHighlight(W->buf, W->buf->filename);
 
-    FILE *fp = fopen(filename, "r");
+    FILE *fp = fopen(file_path, "r");
     if (!fp)
     {
         if (errno == ENOENT)
@@ -72,7 +72,7 @@ int editorOpen(Window *W, const char *filename)
         }
         else
         {
-            editorFatalError("Error opening file %s: %s\n", filename, strerror(errno));
+            editorFatalError("Error opening file %s: %s\n", file_path, strerror(errno));
             return -1;
         }
     }
@@ -133,7 +133,7 @@ static char *editorRowsToString(TextBuffer *buf, int *buflen)
 
 int editorSave(TextBuffer *buf)
 {
-    int fd = open(buf->filename, O_RDWR | O_CREAT, 0644); // 0644 = (rw-r--r--)
+    int fd = open(buf->file_path, O_RDWR | O_CREAT, 0644); // 0644 = (rw-r--r--)
     if (fd == -1)
     {
         editorSetStatusMessage("Can't save! I/O error: %s", strerror(errno));
@@ -157,7 +157,7 @@ int editorSave(TextBuffer *buf)
     close(fd);
     free(strbuf);
     buf->dirty = false;
-    editorSetStatusMessage("\"%s\" saved, %d bytes written on disk", buf->filename, len);
+    editorSetStatusMessage("\"%s\" saved, %d bytes written on disk", buf->file_path, len);
     return 0;
 
 writeerr:
@@ -174,8 +174,9 @@ void command_handler_save(int fd, int argc, char **argv)
     
     if (argc != 0)
     {
-        free(E.active_win->buf->filename);
-        E.active_win->buf->filename = strdup(argv[0]);
+        free(E.active_win->buf->file_path);
+        E.active_win->buf->file_path = strdup(argv[0]);
+        E.active_win->buf->filename = get_filename_from_path(E.active_win->buf->file_path);
     }
 
     editorSave(E.active_win->buf);
@@ -207,8 +208,9 @@ int editorSaveAs(TextBuffer *buf, int fd)
         {
             if (query[0] != '\0')
             {
-                free(buf->filename);
-                buf->filename = strdup(query);
+                free(buf->file_path);
+                buf->file_path = strdup(query);
+                buf->filename = get_filename_from_path(buf->file_path);
                 return editorSave(buf);
             }
             editorSetStatusMessage("");

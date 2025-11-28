@@ -17,10 +17,21 @@ typedef struct Viewport
 typedef struct TextBuffer TextBuffer;
 typedef struct LayoutNode LayoutNode;
 
+#define WINDOW_MAX_TAB 10
+
+typedef struct WindowTab
+{
+    TextBuffer *buf;
+    int cx, cy; /* cursor x, y*/
+    int expected_cx;
+} WindowTab;
+
 typedef struct Window
 {
     LayoutNode *node;
     Viewport viewport;
+    WindowTab *tabs[WINDOW_MAX_TAB];
+    WindowTab *active_tab;
     TextBuffer *buf;
     int x, y;
     int width, height;

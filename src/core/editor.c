@@ -20,7 +20,7 @@
 
 struct editorConfig E;
 
-void initEditor(char *filename)
+void initEditor(char *file_path)
 {
     E.active_win = NULL;
     E.num_win = 0;
@@ -54,7 +54,7 @@ void initEditor(char *filename)
     editorSetInsertMode();
 
     editorCreateWindow();
-    editorOpen(E.active_win, filename);
+    editorOpen(E.active_win, file_path);
     initLayout();
 
     E.fb = fbCreate(E.screenrows, E.screencols);

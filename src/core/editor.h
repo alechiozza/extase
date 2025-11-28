@@ -4,6 +4,7 @@
 #define EDITOR_VERSION "0.0.1"
 
 #define TOPBAR_SIZE 1
+#define TAB_VIEW_SIZE 1
 #define INFOBAR_SIZE 1
 #define SCROLLBAR_SIZE 1
 
@@ -61,10 +62,10 @@ struct editorConfig
 
 extern struct editorConfig E;
 
-TextBuffer *createBuffer(const char *filename);
+TextBuffer *createBuffer(const char *file_path);
 void deleteBuffer(TextBuffer *buf);
 
-void initEditor(char *filename);
+void initEditor(char *file_path);
 
 void editorInsertNewline(Window *W);
 void editorDelLine(Window *W);
