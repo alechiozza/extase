@@ -16,6 +16,7 @@ enum HL
     HL_KEYWORD1,
     HL_KEYWORD2,
     HL_KEYWORD3,
+    HL_KEYWORD4,
     HL_STRING,
     HL_NUMBER,
     HL_MATCH,

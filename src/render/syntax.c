@@ -22,42 +22,93 @@ typedef struct SyntaxGroup
     Color color;
 } SyntaxGroup;
 
-char *test_extensions[] = {".c", ".h", NULL};
-char *keywords1[] = {
+char *c_extensions[] = {".c", ".h", NULL};
+char *c_keywords1[] = {
     "auto", "break", "case", "continue", "default", "do", "else", "enum",
     "extern", "for", "goto", "if", "register", "return", "sizeof", "static",
-    "struct", "switch", "typedef", "union", "volatile", "while", "NULL", NULL
+    "struct", "switch", "typedef", "union", "volatile", "while", NULL
 };
-char *keywords2[] = {
+char *c_keywords2[] = {
     "int", "long", "double", "float", "char", "unsigned", "signed",
     "void", "short", "auto", "const", "bool", NULL
 };
-char *keywords3[] = {
+char *c_keywords3[] = {
     "#if", "#elif", "#else", "#endif", "#ifdef", "#ifndef", "#elifdef",
     "#elifndef", "#define", "#undef", "#include", "#embed", "#line",
     "#error", "#warning", "#pragma", NULL
 };
-SyntaxGroup test_group[] = {
+char *c_keywords4[] = {
+    "true", "false", "NULL", NULL
+};
+SyntaxGroup c_group[] = {
 {
-    keywords1,
+    c_keywords1,
     HL_KEYWORD1
 },
 {
-    keywords2,
+    c_keywords2,
     HL_KEYWORD2
 },
 {
-    keywords3,
+    c_keywords3,
     HL_KEYWORD3
+},
+{
+    c_keywords4,
+    HL_KEYWORD4
 }
 };
 
-#define TEST_GROUP_SIZE (sizeof(test_group)/sizeof(SyntaxGroup))
+char *rust_extensions[] = {".rs", ".rlib", NULL};
+char *rust_keywords1[] = {
+    "as", "break", "const", "continue", "crate", "else", "enum",
+    "extern", "false", "for", "if", "impl", "in", "let",
+    "loop", "match", "mod", "move", "mut", "pub", "unsafe",
+    "where", "while", "async", "await", "dyn", "try", "gen",
+    "abstract", "become", "box", "do", "final", "macro", "override",
+    "piv", "typeof", "unsized", "virtual", "yield", NULL
+};
+char *rust_keywords2[] = {
+    "bool", "char", "str", "i8", "i16", "i32", "i64", "i128", "isize",
+    "u8", "u16", "u32", "u64", "u128", "usize", "f32", "f64", "Self", 
+    "String", "Vec", "Option", "Result", "Box", "Rc", "Arc", "HashMap", NULL
+};
+char *rust_keywords3[] = {
+    "println!", "use", "fn", NULL
+};
+char *rust_keywords4[] = {
+    "true", "false", "None", "Some", NULL
+};
+SyntaxGroup rust_group[] = {
+{
+    rust_keywords1,
+    HL_KEYWORD1
+},
+{
+    rust_keywords2,
+    HL_KEYWORD2
+},
+{
+    rust_keywords3,
+    HL_KEYWORD3
+},
+{
+    rust_keywords4,
+    HL_KEYWORD4
+}
+};
 
 Syntax HLDB[] = {
 {
-    test_extensions,
-    test_group,
+    c_extensions,
+    c_group,
+    "//", 
+    "/*", "*/",
+    HL_HIGHLIGHT_STRINGS | HL_HIGHLIGHT_NUMBERS
+},
+{
+    rust_extensions,
+    rust_group,
     "//", 
     "/*", "*/",
     HL_HIGHLIGHT_STRINGS | HL_HIGHLIGHT_NUMBERS
@@ -208,7 +259,8 @@ static bool Highlight_Keywords(HighlightState *s)
         return false;
 
     SyntaxGroup *groups = s->syntax->groups;
-    for (size_t i = 0; i < TEST_GROUP_SIZE; i++)
+    size_t groups_num = 4; // TODO: hardcoded
+    for (size_t i = 0; i < groups_num; i++)
     {
         char **keywords = groups[i].keywords;
         for (int j = 0; keywords[j]; j++)
@@ -288,6 +340,8 @@ Style editorSyntaxToColor(unsigned char hl)
         return (Style){COLOR_GREEN, COLOR_BLACK, 0};
     case HL_KEYWORD3:
         return (Style){COLOR_MAGENTA, COLOR_BLACK, 0};
+    case HL_KEYWORD4:
+        return (Style){COLOR_ORANGE, COLOR_BLACK, 0};
     case HL_STRING:
         return (Style){COLOR_GREEN, COLOR_BLACK, 0};
     case HL_NUMBER:
