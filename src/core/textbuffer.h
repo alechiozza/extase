@@ -25,5 +25,6 @@ typedef struct TextBuffer
 
 TextBuffer *createBuffer(const char *file_path);
 void deleteBuffer(TextBuffer *buf);
+TextBuffer *findOpenBuffer(const char *file_path);
 
 #endif /* __EDITOR_TEXTBUFFER_H */

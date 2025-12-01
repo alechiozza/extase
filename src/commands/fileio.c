@@ -20,19 +20,6 @@
 #include <string.h>
 #include <fcntl.h>
 
-static TextBuffer *findOpenBuffer(const char *file_path)
-{
-    for (size_t i = 0; i < E.num_buf; i++)
-    {
-        if (E.buf[i]->file_path == NULL) continue;
-        if (strcmp(E.buf[i]->file_path, file_path) == 0)
-        {
-            return E.buf[i];
-        }
-    }
-    return NULL;
-}
-
 int editorOpen(Window *W, const char *file_path)
 {
     TextBuffer *existing = findOpenBuffer(file_path);

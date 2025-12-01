@@ -15,7 +15,7 @@ void editorQuit(TextBuffer *buf, int fd)
 {
     if (buf->dirty == false)
     {
-        editorCloseWindow();
+        closeWindow();
         return;
     }
 
@@ -46,7 +46,7 @@ void editorQuit(TextBuffer *buf, int fd)
             if (!strcmp(query, "y") || !strcmp(query, "Y") || !strcmp(query, "yes") ||
                 !strcmp(query, "Yes") || !strcmp(query, "YES"))
             {
-                editorCloseWindow();
+                closeWindow();
             }
 
             editorSetStatusMessage("");

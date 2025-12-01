@@ -8,10 +8,19 @@
 #include <string.h>
 #include <stdlib.h>
 
+typedef struct TextBufferVector
+{
+    TextBuffer **data;
+    size_t size;
+    size_t capacity;
+} TextBufferVector;
+
+#define TEXT_BUF_VEC_INIT (TextBufferVector){NULL, 0, 0}
+
+static TextBufferVector B = TEXT_BUF_VEC_INIT;
+
 TextBuffer *createBuffer(const char *file_path)
 {
-    if (E.num_buf == EDITOR_MAX_BUF) return NULL;
-
     TextBuffer *buf = malloc(sizeof(TextBuffer));
     if (buf == NULL)
     {
@@ -27,9 +36,23 @@ TextBuffer *createBuffer(const char *file_path)
     buf->indent_mode = INDENT_WITH_SPACES;
     buf->indent_size = DEFAULT_INDENT_SIZE;
 
-    E.buf[E.num_buf] = buf;
+    if (B.size == B.capacity)
+    {
+        size_t new_capacity = next_capacity(B.capacity, B.size+1);
+        TextBuffer **new_data = realloc(B.data, new_capacity * sizeof(TextBuffer *));
+        if (!new_data)
+        {
+            new_capacity = B.size+1; /* One last hope*/
+            new_data = realloc(B.data, new_capacity * sizeof(TextBuffer *));
+            if (!new_data) return NULL;
+        }
+        
+        B.data = new_data;
+        B.capacity = new_capacity;
+    }
 
-    E.num_buf++;
+    B.data[B.size] = buf;
+    B.size++;
 
     return buf;
 }
@@ -37,9 +60,9 @@ TextBuffer *createBuffer(const char *file_path)
 void deleteBuffer(TextBuffer *buf)
 {
     int found_idx = -1;
-    for (size_t i = 0; i < E.num_buf; i++)
+    for (size_t i = 0; i < B.size; i++)
     {
-        if (E.buf[i] == buf)
+        if (B.data[i] == buf)
         {
             found_idx = i;
             break;
@@ -63,14 +86,26 @@ void deleteBuffer(TextBuffer *buf)
 
     free(buf);
 
-    int remaining_elements = E.num_buf - 1 - found_idx;
+    int remaining_elements = B.size - 1 - found_idx;
 
     if (remaining_elements > 0)
     {
-        memmove(&E.buf[found_idx], &E.buf[found_idx + 1], sizeof(TextBuffer *) * remaining_elements);
+        memmove(&B.data[found_idx], &B.data[found_idx + 1], sizeof(TextBuffer *) * remaining_elements);
     }
 
-    E.num_buf--;
+    B.size--;
 
-    E.buf[E.num_buf] = NULL;
+    B.data[B.size] = NULL;
+}
+
+TextBuffer *findOpenBuffer(const char *file_path)
+{
+    for (size_t i = 0; i < B.size; i++)
+    {
+        if (strcmp(B.data[i]->file_path, file_path) == 0)
+        {
+            return B.data[i];
+        }
+    }
+    return NULL;
 }

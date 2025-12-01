@@ -25,41 +25,41 @@ static void processWindowMode(int fd)
     {
         case '+':
         case '=': /* us keyboard sucks */
-            editorResizeWindow(E.active_win, 0.1f, false);
+            resizeWindow(E.active_win, 0.1f, false);
             break;
         case '-':
-            editorResizeWindow(E.active_win, -0.1f, false);
+            resizeWindow(E.active_win, -0.1f, false);
             break;
         case '>':
-            editorResizeWindow(E.active_win, 0.1f, true);
+            resizeWindow(E.active_win, 0.1f, true);
             break;
         case '<':
-            editorResizeWindow(E.active_win, -0.1f, true);
+            resizeWindow(E.active_win, -0.1f, true);
             break;
         case ARROW_LEFT:
         case 'h':
-            editorSwitchWindow(DIR_LEFT);
+            switchWindow(DIR_LEFT);
             break;
         case ARROW_DOWN:
         case 'j':
-            editorSwitchWindow(DIR_DOWN);
+            switchWindow(DIR_DOWN);
             break;
         case ARROW_UP:
         case 'k':
-            editorSwitchWindow(DIR_UP);
+            switchWindow(DIR_UP);
             break;
         case ARROW_RIGHT:
         case 'l':
-            editorSwitchWindow(DIR_RIGHT);
+            switchWindow(DIR_RIGHT);
             break;
         case 'q':
             editorQuit(E.active_win->buf, STDIN_FILENO);
             break;
         case 'v':
-            editorSplitWindow(SPLIT_VERTICAL);
+            splitWindowLayout(SPLIT_VERTICAL);
             break;
         case 's':
-            editorSplitWindow(SPLIT_HORIZONTAL);
+            splitWindowLayout(SPLIT_HORIZONTAL);
             break;
     }
 }

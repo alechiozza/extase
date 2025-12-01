@@ -88,7 +88,7 @@ static void drawTabsView(FrameBuffer *fb, Window *W)
 {
     fbWindowEraseLine(fb, W, 0, COLOR_DARK_BLACK);
 
-    int len = W->viewport.left;
+    int len = 0;
     Style style;
     Style bar_style;
 
@@ -100,12 +100,12 @@ static void drawTabsView(FrameBuffer *fb, Window *W)
 
         fbWindowPutCodepoint(fb, W, len, 0, UNICODE_LEFT_BAR, bar_style);
         len++;
-        fbWindowDrawString(fb, W, len, 0, "  ", style);
-        len+=2;
-        fbWindowDrawString(fb, W, len, 0, W->buf->filename, style);
-        len += strlen(W->buf->filename);
         fbWindowDrawString(fb, W, len, 0, "   ", style);
         len+=3;
+        fbWindowDrawString(fb, W, len, 0, W->buf->filename, style);
+        len += strlen(W->buf->filename);
+        fbWindowDrawString(fb, W, len, 0, "    ", style);
+        len+=4;
 
         if (len >= W->width)
             break;
@@ -145,7 +145,7 @@ static void drawLineNumber(FrameBuffer *fb, Window *W, int y, int width)
     if (filerow >= W->buf->numrows)
     {
         for (int i = 0; i < width; i++) 
-            fbWindowPutChar(fb, W, i, y, ' ', (Style){COLOR_BRIGHT_BLACK, COLOR_LINE_HIGHLIGHT,0});
+            fbWindowPutChar(fb, W, i, y, ' ', (Style){COLOR_BRIGHT_BLACK, COLOR_BLACK,0});
         return;
     }
 
@@ -164,7 +164,7 @@ static void drawLineNumber(FrameBuffer *fb, Window *W, int y, int width)
     if (filerow == current_row)
         fbWindowDrawChars(fb, W, 0, y, buf, blen, (Style){COLOR_WHITE, COLOR_UI_DARK_BLACK,0});
     else
-        fbWindowDrawChars(fb, W, 0, y, buf, blen, (Style){COLOR_BRIGHT_BLACK, COLOR_LINE_HIGHLIGHT,0});
+        fbWindowDrawChars(fb, W, 0, y, buf, blen, (Style){COLOR_BRIGHT_BLACK, COLOR_BLACK,0});
 }
 
 static void drawWelcomeScreen(FrameBuffer *fb, Window *W)

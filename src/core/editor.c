@@ -24,7 +24,6 @@ void initEditor(char *file_path)
 {
     E.active_win = NULL;
     E.num_win = 0;
-    E.num_buf = 0;
 
     E.active_widget = NULL;
     E.num_widget = 0;
@@ -53,7 +52,7 @@ void initEditor(char *file_path)
 
     editorSetInsertMode();
 
-    editorCreateWindow();
+    createWindow();
     editorOpen(E.active_win, file_path);
     initLayout();
 

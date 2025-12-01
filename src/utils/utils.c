@@ -64,3 +64,17 @@ const char *get_filename_from_path(const char *path)
 
     return path;
 }
+
+size_t next_capacity(size_t current, size_t needed)
+{
+    size_t new_cap = current ? current : 8;
+    while (new_cap < needed)
+    {
+        size_t doubled = new_cap << 1;
+        if (doubled <= new_cap)
+            return needed;
+        new_cap = doubled;
+    }
+
+    return new_cap;
+}

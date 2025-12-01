@@ -25,7 +25,6 @@ typedef struct FrameBuffer FrameBuffer;
 typedef struct Widget Widget;
 
 #define EDITOR_MAX_WIN 10
-#define EDITOR_MAX_BUF 10
 #define EDITOR_MAX_WIDG 10
 
 struct editorConfig
@@ -39,9 +38,6 @@ struct editorConfig
     Window *win[EDITOR_MAX_WIN];
     Window *active_win;
     size_t num_win;
-
-    TextBuffer *buf[EDITOR_MAX_BUF];
-    size_t num_buf;
 
     Widget *widgets[EDITOR_MAX_WIDG];
     Widget *active_widget;
@@ -61,9 +57,6 @@ struct editorConfig
 };
 
 extern struct editorConfig E;
-
-TextBuffer *createBuffer(const char *file_path);
-void deleteBuffer(TextBuffer *buf);
 
 void initEditor(char *file_path);
 
