@@ -17,7 +17,7 @@ typedef struct Viewport
 } Viewport;
 
 typedef struct TextBuffer TextBuffer;
-typedef struct LayoutNode LayoutNode;
+typedef struct FrameBuffer FrameBuffer;
 
 #define WINDOW_MAX_TAB 10
 
@@ -50,6 +50,7 @@ void windowProcessKeypress(int key);
 void switchWindow(Direction dir);
 void resizeWindow(Window *W, float amount, bool directed);
 
-void drawWindow();
+int getLineNumberWidth(Window *W);
+void drawWindow(FrameBuffer *fb, Window *W);
 
 #endif /* __EDITOR_WINDOW_H */

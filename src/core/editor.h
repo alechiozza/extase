@@ -42,6 +42,7 @@ struct editorConfig
     Widget *widgets[EDITOR_MAX_WIDG];
     Widget *active_widget;
     size_t num_widget;
+    //active_tab
 
     bool linenums;
     bool relativenums; /* Enable line numbers relative numeration */
