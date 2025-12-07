@@ -44,13 +44,18 @@ struct editorConfig
     size_t num_widget;
     //active_tab
 
+    bool rawmode;    /* Is terminal raw mode enabled? */
+    
     bool linenums;
     bool relativenums; /* Enable line numbers relative numeration */
-    bool rawmode;    /* Is terminal raw mode enabled? */
     bool too_small;  /* The screen is too small to be rendered */
     bool auto_paren;
     bool auto_indent;
     bool no_topbar;
+
+    int scroll_margin;
+    int horizontal_margin;
+
     char statusmsg[EDITOR_STATUSMSG_LENGTH];
     int mode;
 

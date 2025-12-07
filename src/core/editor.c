@@ -39,6 +39,9 @@ void initEditor(char *file_path)
     E.auto_indent = true;
     E.no_topbar = false;
 
+    E.scroll_margin = 5;
+    E.horizontal_margin = 0;
+
     updateWindowSize();
     signal(SIGWINCH, handleSigWinCh);
 

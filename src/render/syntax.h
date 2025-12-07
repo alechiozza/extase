@@ -17,6 +17,7 @@ enum HL
     HL_KEYWORD2,
     HL_KEYWORD3,
     HL_KEYWORD4,
+    HL_KEYWORD5,
     HL_STRING,
     HL_NUMBER,
     HL_MATCH,
@@ -27,6 +28,7 @@ typedef struct Syntax
 {
     char **filematch;
     SyntaxGroup *groups;
+    size_t group_num;
     char singleline_comment_start[2];
     char multiline_comment_start[3];
     char multiline_comment_end[3];

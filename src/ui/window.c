@@ -29,8 +29,6 @@ static void windowInit(Window *W)
     W->viewport.bottom = 0;
     W->viewport.left = 0;
     W->viewport.right = 0;
-    W->viewport.scroll_margin = 5;
-    W->viewport.horizontal_margin = 0;
     W->viewport.rowoff = 0;
     W->viewport.coloff = 0;
 }

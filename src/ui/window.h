@@ -10,8 +10,6 @@ typedef struct Viewport
     int top, bottom;
     int left, right;
     int cols, rows;
-    int scroll_margin;
-    int horizontal_margin;
     int rowoff;     /* Offset of row displayed. */
     int coloff;     /* Offset of column displayed. */
 } Viewport;
@@ -24,8 +22,10 @@ typedef struct FrameBuffer FrameBuffer;
 typedef struct WindowTab
 {
     TextBuffer *buf;
-    int cx, cy; /* cursor x, y*/
+    int cx, cy;     /* cursor x, y*/
     int expected_cx;
+    int rowoff;     /* Offset of row displayed. */
+    int coloff;     /* Offset of column displayed. */
 } WindowTab;
 
 typedef struct Window

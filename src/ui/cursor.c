@@ -106,7 +106,7 @@ void editorMoveCursorUp(Window *W)
 
     if (filerow == 0) return;
 
-    if (W->cy < W->viewport.scroll_margin)
+    if (W->cy < E.scroll_margin)
     {
         if (W->viewport.rowoff)
             W->viewport.rowoff--;
@@ -127,7 +127,7 @@ void editorMoveCursorDown(Window *W)
 
     if (filerow >= W->buf->numrows) return;
 
-    if (W->cy >= W->viewport.rows - W->viewport.scroll_margin)
+    if (W->cy >= W->viewport.rows - E.scroll_margin)
     {
         W->viewport.rowoff++;
     }
