@@ -36,6 +36,45 @@ extase <filename>
 
 ![Screenshot](./assets/screenshot1.png)
 
+## Keybindings
+
+### Normal Mode
+
+These are the keybinds currently supported in NORMAL mode.
+
+| Keybind | Action |
+| ------- | ------ |
+| Ctrl+Q  | Close the current window or quit if only one window remains |
+| Ctrl+S  | Save |
+| Ctrl+F  | Find a keyword |
+| Ctrl+L  | Toggle the line numbers at the left of the text buffer |
+| Ctrl+T  | Toggle tab mode. If the tab mode is set on space mode, every TAB character is highlighted |
+| Ctrl+O  | Open the file picker |
+| i       | Switch to insert mode |
+| r       | Toggle relitive line numeration |
+| o       | Switch to insert mode and add a new line |
+| 0       | Move the cursor at the beginning of the line |
+| $       | Move the cursor at the end of the line |
+| dd      | Delete the entire line |
+| d0      | Delete everything at the left of the cursor |
+| d$      | Delete evrything at the right of the curosr |
+| :       | Open the editor command shell |
+| Ctrl+W  | Switch to window control mode |
+
+**Way more keybinds will be added in the future.**
+
+### Window control mode
+
+| Keybind | Action |
+| ------- | ------ |
+| + or =  | Increase the size of the active window |
+| -       | Decrease the size of the active window |
+| > and < | Resize the window (in the direction of the arrow pressed) |
+| j, k, l, q and arrows | Move to the up/down/left/right window |
+| q       | Close the window or quit the editor if only one remains |
+| v       | Split the windows vertically |
+| s       | Split the windows horizontally |
+
 ## Contributing
 
 Contributions are welcome and appreciated! Please use the [Issue Tracker](https://github.com/alechiozza/extase/issues) to report bugs, suggest new features, or ask questions about the codebase.
